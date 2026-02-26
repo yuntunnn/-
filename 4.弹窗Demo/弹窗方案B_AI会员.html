@@ -127,15 +127,38 @@
             right: 12px;
         }
 
-        .main-text {
+        /* 品牌标识标题 */
+        .brand-title {
             text-align: center;
-            margin: 10px 0 24px;
+            margin: 10px 0 16px;
+        }
+
+        .brand-title-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.65);
+            letter-spacing: 1px;
+        }
+
+        .brand-title-text .brand-hl {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+        }
+
+        /* 营销视觉区 */
+        .offer-banner {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 16px 20px;
+            text-align: center;
+            margin-bottom: 16px;
         }
 
         .brand-name {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.75);
             letter-spacing: 2px;
             margin-bottom: 4px;
         }
@@ -364,7 +387,7 @@
 
         .social-proof {
             text-align: center;
-            margin-top: 12px;
+            margin-top: 10px;
             font-size: 11px;
             color: rgba(255, 255, 255, 0.4);
         }
@@ -454,7 +477,14 @@
             </div>
             <div class="popup-body">
                 <button class="close-btn" id="closeBtn">✕</button>
-                <div class="main-text">
+                <!-- 品牌标识标题 -->
+                <div class="brand-title">
+                    <div class="brand-title-text">
+                        <span class="brand-hl">夸克×千问</span> · 更强大的AI浏览器
+                    </div>
+                </div>
+                <!-- 营销信息视觉区 -->
+                <div class="offer-banner">
                     <div class="brand-name">AI 会员</div>
                     <div class="offer-line">
                         <span class="offer-text">限时</span>

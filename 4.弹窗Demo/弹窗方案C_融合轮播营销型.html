@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>夸克推广弹窗 — 方案C 融合轮播营销型</title>
+    <style>
+        /* ===== Reset & Base ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e8eaf6 0%, #f5f5f5 50%, #e3f2fd 100%);
+        }
+
+        /* ===== 遮罩层 ===== */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* ===== 弹窗主体 ===== */
+        .popup {
+            width: 340px;
+            border-radius: 20px;
+            overflow: visible;
+            position: relative;
+            animation: slideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .popup-body {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===== 飘带标签 ===== */
+        .ribbon {
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        .ribbon-inner {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8F5E 40%, #FF6B35 60%, #E55A2B 100%);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 800;
+            padding: 7px 28px;
+            border-radius: 20px;
+            white-space: nowrap;
+            letter-spacing: 3px;
+            box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .ribbon-inner::before,
+        .ribbon-inner::after {
+            content: '✦';
+            font-size: 10px;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .ribbon-inner::before {
+            left: 10px;
+        }
+
+        .ribbon-inner::after {
+            right: 10px;
+        }
+
+        /* ===== 关闭按钮 ===== */
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-btn:hover {
+            background: #fff;
+            color: #333;
+            transform: scale(1.1);
+        }
+
+        /* ===== 轮播区域 ===== */
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            height: 100%;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* ===== 轮播图 — CSS绘制的营销视觉 ===== */
+
+        /* 帧1: 网盘SVIP */
+        .slide-svip {
+            background: linear-gradient(165deg, #0a1628 0%, #0d2137 30%, #0f3460 70%, #0a1628 100%);
+        }
+
+        .slide-svip::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(78, 203, 255, 0.15) 0%, transparent 70%);
+            top: -40px;
+            right: -40px;
+        }
+
+        .slide-svip::after {
+            content: '';
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(33, 150, 243, 0.12) 0%, transparent 70%);
+            bottom: -20px;
+            left: -30px;
+        }
+
+        /* 帧2: AI会员 */
+        .slide-ai {
+            background: linear-gradient(165deg, #1a0a3e 0%, #2d1b69 30%, #4F6EF7 100%);
+        }
+
+        .slide-ai::before {
+            content: '';
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(123, 92, 245, 0.2) 0%, transparent 70%);
+            top: -60px;
+            left: -40px;
+        }
+
+        .slide-ai::after {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(79, 110, 247, 0.15) 0%, transparent 70%);
+            bottom: -40px;
+            right: -20px;
+        }
+
+        /* 帧3: 扫描王 */
+        .slide-scan {
+            background: linear-gradient(165deg, #004D40 0%, #00695C 30%, #00897B 70%, #26A69A 100%);
+        }
+
+        .slide-scan::before {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 230, 118, 0.15) 0%, transparent 70%);
+            top: -30px;
+            right: -30px;
+        }
+
+        .slide-scan::after {
+            content: '';
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(38, 166, 154, 0.12) 0%, transparent 70%);
+            bottom: -20px;
+            left: -20px;
+        }
+
+        /* 轮播图内内容层 */
+        .slide-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 24px;
+        }
+
+        .slide-icon {
+            font-size: 44px;
+            margin-bottom: 8px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        .slide-badge {
+            display: inline-block;
+            padding: 3px 14px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .slide-svip .slide-badge {
+            background: rgba(78, 203, 255, 0.2);
+            border: 1px solid rgba(78, 203, 255, 0.4);
+            color: #4ecbff;
+        }
+
+        .slide-ai .slide-badge {
+            background: rgba(179, 136, 255, 0.2);
+            border: 1px solid rgba(179, 136, 255, 0.4);
+            color: #b388ff;
+        }
+
+        .slide-scan .slide-badge {
+            background: rgba(0, 230, 118, 0.2);
+            border: 1px solid rgba(0, 230, 118, 0.4);
+            color: #69f0ae;
+        }
+
+        .slide-price {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .slide-svip .slide-price {
+            background: linear-gradient(180deg, #80D8FF 0%, #4ecbff 50%, #2196F3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 6px rgba(33, 150, 243, 0.4));
+        }
+
+        .slide-ai .slide-price {
+            background: linear-gradient(180deg, #E1BEE7 0%, #CE93D8 50%, #AB47BC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 6px rgba(171, 71, 188, 0.4));
+        }
+
+        .slide-scan .slide-price {
+            background: linear-gradient(180deg, #A5D6A7 0%, #66BB6A 50%, #43A047 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 6px rgba(67, 160, 71, 0.4));
+        }
+
+        .slide-price-sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .slide-features {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .slide-feat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 500;
+        }
+
+        .slide-feat-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* 轮播装饰粒子 */
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: float 4s ease-in-out infinite alternate;
+        }
+
+        .slide-svip .particle {
+            background: #4ecbff;
+        }
+
+        .slide-ai .particle {
+            background: #b388ff;
+        }
+
+        .slide-scan .particle {
+            background: #69f0ae;
+        }
+
+        .particle:nth-child(1) {
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .particle:nth-child(2) {
+            top: 25%;
+            right: 15%;
+            animation-delay: 0.5s;
+            width: 2px;
+            height: 2px;
+        }
+
+        .particle:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 1s;
+        }
+
+        .particle:nth-child(4) {
+            top: 40%;
+            right: 8%;
+            animation-delay: 1.5s;
+            width: 2px;
+            height: 2px;
+        }
+
+        .particle:nth-child(5) {
+            bottom: 15%;
+            right: 25%;
+            animation-delay: 2s;
+        }
+
+        /* ===== 轮播左右按钮 ===== */
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            opacity: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel:hover .carousel-arrow {
+            opacity: 1;
+        }
+
+        .carousel-arrow:hover {
+            background: #fff;
+        }
+
+        .carousel-arrow.prev {
+            left: 8px;
+        }
+
+        .carousel-arrow.next {
+            right: 8px;
+        }
+
+        /* ===== 进度条 ===== */
+        .progress-bar {
+            height: 3px;
+            background: rgba(79, 110, 247, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4F6EF7, #FF6B35);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* ===== 轮播指示器 ===== */
+        .carousel-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 0 4px;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d4d8e0;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 0;
+        }
+
+        .carousel-dot.active {
+            width: 24px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #4F6EF7, #FF6B35);
+        }
+
+        /* ===== 品牌标题区域 ===== */
+        .brand-title {
+            padding: 10px 24px 6px;
+            text-align: center;
+        }
+
+        .brand-title-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1.4;
+        }
+
+        .brand-title-text .highlight {
+            background: linear-gradient(135deg, #4F6EF7, #7B5CF5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== 限时福利条 ===== */
+        .promo-bar {
+            margin: 14px 24px 0;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(255, 107, 53, 0.08) 100%);
+            border: 1px solid rgba(79, 110, 247, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .promo-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4F6EF7;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .countdown-inline {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .cd-num {
+            background: linear-gradient(135deg, #4F6EF7, #3D5CCE);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 2px 5px;
+            border-radius: 4px;
+            min-width: 24px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cd-colon {
+            font-size: 13px;
+            font-weight: 700;
+            color: #4F6EF7;
+            animation: blink 1s step-end infinite;
+        }
+
+        /* ===== CTA按钮 ===== */
+        .cta-btn {
+            display: block;
+            width: calc(100% - 48px);
+            margin: 14px auto 0;
+            padding: 14px 0;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #4F6EF7 0%, #FF6B35 100%);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 6px 20px rgba(79, 110, 247, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            animation: shimmer 2.5s ease-in-out infinite;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(79, 110, 247, 0.45);
+        }
+
+        .cta-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== 底部 ===== */
+        .dismiss-text {
+            text-align: center;
+            padding: 0;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #b0b4c0;
+            cursor: pointer;
+        }
+
+        .dismiss-text:hover {
+            color: #8a8fa3;
+        }
+
+
+
+        .social-proof {
+            text-align: center;
+            margin-top: 6px;
+            padding-bottom: 16px;
+            font-size: 11px;
+            color: #b0b4c0;
+        }
+
+        .social-proof span {
+            color: #4F6EF7;
+            font-weight: 600;
+        }
+
+        /* ===== 动画 ===== */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: translateY(-12px) scale(1.3);
+                opacity: 0.6;
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .flip {
+            animation: flipDown 0.4s ease;
+        }
+
+        @keyframes flipDown {
+            0% {
+                transform: perspective(200px) rotateX(-30deg);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: perspective(200px) rotateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 文案切换动画 */
+        .text-fade-in {
+            animation: textFade 0.4s ease;
+        }
+
+        @keyframes textFade {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="overlay" id="overlay">
+        <div class="popup">
+            <!-- 飘带标签 -->
+            <div class="ribbon">
+                <div class="ribbon-inner">限时福利</div>
+            </div>
+
+            <div class="popup-body">
+                <!-- 关闭按钮 -->
+                <button class="close-btn" id="closeBtn">✕</button>
+
+                <!-- 轮播图区域 -->
+                <div class="carousel" id="carousel">
+                    <div class="carousel-track" id="carouselTrack">
+                        <!-- 帧1: 网盘SVIP会员 -->
+                        <div class="carousel-slide slide-svip">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="slide-content">
+                                <div class="slide-icon">💾</div>
+                                <div class="slide-badge">新人专享 · 30+网盘特权</div>
+                                <div class="slide-price">1.9折</div>
+                                <div class="slide-price-sub">连续包月仅 <strong
+                                        style="color:#fff;font-size:16px;">4.8</strong> 元/月</div>
+                                <div class="slide-features">
+                                    <span class="slide-feat">6T空间</span>
+                                    <span class="slide-feat-dot"></span>
+                                    <span class="slide-feat">极速下载</span>
+                                    <span class="slide-feat-dot"></span>
+                                    <span class="slide-feat">自动备份</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 帧2: AI会员 -->
+                        <div class="carousel-slide slide-ai">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="slide-content">
+                                <div class="slide-icon">🧠</div>
+                                <div class="slide-badge">新人专享 · 20+AI特权</div>
+                                <div class="slide-price">1.9折</div>
+                                <div class="slide-price-sub">连续包月仅 <strong
+                                        style="color:#fff;font-size:16px;">4.8</strong> 元/月</div>
+                                <div class="slide-features">
+                                    <span class="slide-feat">深度思考</span>
+                                    <span class="slide-feat-dot"></span>
+                                    <span class="slide-feat">全局AI</span>
+                                    <span class="slide-feat-dot"></span>
+                                    <span class="slide-feat">AI翻译</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 帧3: 扫描王会员 -->
+                        <div class="carousel-slide slide-scan">
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="particle"></div>
+                            <div class="slide-content">
+                                <div class="slide-icon">📄</div>
+                                <div class="slide-badge">限时特惠 · 20+扫描权益</div>
+                                <div class="slide-price">1元</div>
+                                <div class="slide-price-sub">7天试用，<strong
+                                        style="color:#fff;font-size:16px;">立减127</strong> 元</div>
+                                <div class="slide-features">
+                                    <span class="slide-feat">证件扫描</span>
+                                    <span class="slide-feat-dot"></span>
+                                    <span class="slide-feat">OCR识别</span>
+                                    <span class="slide-feat-dot"></span>
+                                    <span class="slide-feat">PDF转换</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-arrow prev" id="prevBtn">‹</button>
+                    <button class="carousel-arrow next" id="nextBtn">›</button>
+                </div>
+
+                <!-- 进度条 -->
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <!-- 指示器 -->
+                <div class="carousel-dots" id="carouselDots">
+                    <button class="carousel-dot active" data-index="0"></button>
+                    <button class="carousel-dot" data-index="1"></button>
+                    <button class="carousel-dot" data-index="2"></button>
+                </div>
+
+                <!-- 品牌标题 -->
+                <div class="brand-title">
+                    <div class="brand-title-text">
+                        <span class="highlight">夸克×千问</span> · 更强大的AI浏览器
+                    </div>
+                </div>
+
+                <!-- 限时福利条 -->
+                <div class="promo-bar">
+                    <div class="promo-text">
+                        <span>🎁</span>
+                        <span id="promoLabel">新人限时优惠</span>
+                    </div>
+                    <div class="countdown-inline">
+                        <span class="cd-num" id="cdH">23</span>
+                        <span class="cd-colon">:</span>
+                        <span class="cd-num" id="cdM">59</span>
+                        <span class="cd-colon">:</span>
+                        <span class="cd-num" id="cdS">59</span>
+                    </div>
+                </div>
+
+                <!-- CTA按钮 -->
+                <button class="cta-btn" id="ctaBtn">4.8元 立即开通</button>
+
+                <!-- 底部 -->
+
+                <div class="dismiss-text" id="dismissText">不再提醒</div>
+                <div class="social-proof">已有 <span id="userCount">23,658</span> 人开通</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            // ===== 配置 =====
+            const AUTOPLAY_INTERVAL = 3000;
+            const PROGRESS_UPDATE = 30;
+
+            // ===== 每帧对应的动态内容 =====
+            const slideData = [
+                { cta: '4.8元 立即开通', promoLabel: '新人限时优惠' },
+                { cta: '4.8元 立即开通', promoLabel: '新人限时优惠' },
+                { cta: '1元 立即试用', promoLabel: '新人限时试用' },
+            ];
+
+            // ===== DOM =====
+            const track = document.getElementById('carouselTrack');
+            const dots = document.querySelectorAll('.carousel-dot');
+            const progressFill = document.getElementById('progressFill');
+            const carousel = document.getElementById('carousel');
+            const ctaBtn = document.getElementById('ctaBtn');
+            const promoLabel = document.getElementById('promoLabel');
+
+            const slideCount = 3;
+            let currentIndex = 0;
+            let autoplayTimer = null;
+            let progressTimer = null;
+            let progressValue = 0;
+            let touchStartX = 0;
+
+            // ===== 切换到指定帧 =====
+            function goToSlide(index) {
+                currentIndex = (index + slideCount) % slideCount;
+                track.style.transform = `translateX(-${currentIndex * 100}%)`;
+
+                // 更新指示器
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentIndex);
+                });
+
+                // 更新CTA和促销标签
+                const data = slideData[currentIndex];
+                ctaBtn.textContent = data.cta;
+                promoLabel.textContent = data.promoLabel;
+
+                // 重置进度条
+                resetProgress();
+            }
+
+            // ===== 进度条 =====
+            function resetProgress() {
+                progressValue = 0;
+                progressFill.style.width = '0%';
+                clearInterval(progressTimer);
+                progressTimer = setInterval(() => {
+                    progressValue += (PROGRESS_UPDATE / AUTOPLAY_INTERVAL) * 100;
+                    progressFill.style.width = Math.min(progressValue, 100) + '%';
+                }, PROGRESS_UPDATE);
+            }
+
+            // ===== 自动轮播 =====
+            function startAutoplay() {
+                stopAutoplay();
+                resetProgress();
+                autoplayTimer = setInterval(() => {
+                    goToSlide(currentIndex + 1);
+                }, AUTOPLAY_INTERVAL);
+            }
+
+            function stopAutoplay() {
+                clearInterval(autoplayTimer);
+                clearInterval(progressTimer);
+            }
+
+            // ===== 事件绑定 =====
+            dots.forEach(dot => {
+                dot.addEventListener('click', () => {
+                    goToSlide(parseInt(dot.dataset.index));
+                    startAutoplay();
+                });
+            });
+
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                goToSlide(currentIndex - 1);
+                startAutoplay();
+            });
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                goToSlide(currentIndex + 1);
+                startAutoplay();
+            });
+
+            // 触摸滑动
+            carousel.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                stopAutoplay();
+            }, { passive: true });
+            carousel.addEventListener('touchend', (e) => {
+                const diff = touchStartX - e.changedTouches[0].screenX;
+                if (Math.abs(diff) > 40) {
+                    goToSlide(diff > 0 ? currentIndex + 1 : currentIndex - 1);
+                }
+                startAutoplay();
+            }, { passive: true });
+
+            // 鼠标悬停暂停
+            carousel.addEventListener('mouseenter', stopAutoplay);
+            carousel.addEventListener('mouseleave', startAutoplay);
+
+            // ===== 倒计时 =====
+            const cdH = document.getElementById('cdH');
+            const cdM = document.getElementById('cdM');
+            const cdS = document.getElementById('cdS');
+            let totalSeconds = 23 * 3600 + 59 * 60 + 59;
+
+            setInterval(() => {
+                if (totalSeconds <= 0) return;
+                totalSeconds--;
+                const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+                const mm = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+                const ss = String(totalSeconds % 60).padStart(2, '0');
+
+                if (cdH.textContent !== hh) { cdH.textContent = hh; cdH.classList.remove('flip'); void cdH.offsetWidth; cdH.classList.add('flip'); }
+                if (cdM.textContent !== mm) { cdM.textContent = mm; cdM.classList.remove('flip'); void cdM.offsetWidth; cdM.classList.add('flip'); }
+                if (cdS.textContent !== ss) { cdS.textContent = ss; cdS.classList.remove('flip'); void cdS.offsetWidth; cdS.classList.add('flip'); }
+            }, 1000);
+
+            // ===== 社会认同数字增长 =====
+            const uc = document.getElementById('userCount');
+            let baseCount = 23658;
+            setInterval(() => {
+                baseCount += Math.floor(Math.random() * 3) + 1;
+                uc.textContent = baseCount.toLocaleString();
+            }, 5000);
+
+            // ===== 关闭弹窗 =====
+            function closePopup() {
+                const overlay = document.getElementById('overlay');
+                overlay.style.opacity = '0';
+                overlay.style.transition = 'opacity 0.25s';
+                setTimeout(() => overlay.style.display = 'none', 250);
+                stopAutoplay();
+            }
+
+            document.getElementById('closeBtn').addEventListener('click', closePopup);
+            document.getElementById('dismissText').addEventListener('click', closePopup);
+            document.getElementById('overlay').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) closePopup();
+            });
+
+            // CTA 点击
+            ctaBtn.addEventListener('click', () => {
+                window.open('https://b.quark.cn/', '_blank');
+            });
+
+            // ===== 启动 =====
+            startAutoplay();
+        })();
+    </script>
+
+</body>
+
+</html>
