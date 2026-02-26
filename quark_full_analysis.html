@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夸克AI弹窗 · 全量历史数据分析</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #07090d;
+    --surface: #0e1117;
+    --surface2: #151820;
+    --border: #1a1f2c;
+    --border2: #222736;
+    --c1: #3b82f6;    /* blue - start */
+    --c2: #8b5cf6;    /* purple - pop_show */
+    --c3: #10b981;    /* green - pop_click */
+    --c4: #f59e0b;    /* amber - install */
+    --c5: #ef4444;    /* red - fail/break */
+    --c6: #06b6d4;    /* cyan */
+    --text: #e2e8f0;
+    --muted: #4b5563;
+    --muted2: #6b7280;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-weight: 300;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(59,130,246,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 30% at 10% 80%, rgba(139,92,246,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 40px 28px 80px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 48px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+  .header h1 span { color: var(--c1); }
+  .header p { color: var(--muted2); font-size: 13px; margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
+  .header-right {
+    text-align: right;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .header-right b { color: var(--c1); }
+
+  /* SECTION */
+  .sec-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sec-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* KPI ROW */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi.b1::after { background: var(--c1); }
+  .kpi.b2::after { background: var(--c2); }
+  .kpi.b3::after { background: var(--c3); }
+  .kpi.b4::after { background: var(--c4); }
+  .kpi.b5::after { background: var(--c5); }
+  .kpi-l { font-size: 10px; color: var(--muted2); letter-spacing: 1px; font-family: 'IBM Plex Mono', monospace; margin-bottom: 8px; }
+  .kpi-v { font-size: 26px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; line-height: 1; }
+  .kpi.b1 .kpi-v { color: var(--c1); }
+  .kpi.b2 .kpi-v { color: var(--c2); }
+  .kpi.b3 .kpi-v { color: var(--c3); }
+  .kpi.b4 .kpi-v { color: var(--c4); }
+  .kpi.b5 .kpi-v { color: var(--c5); }
+  .kpi-s { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
+
+  /* CHART CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .card-sub { font-size: 12px; color: var(--muted2); margin-bottom: 20px; }
+
+  /* CHART AREA - Custom SVG-based */
+  .chart-area {
+    width: 100%;
+    overflow: visible;
+  }
+
+  /* two col */
+  .two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+
+  /* BAR CHART */
+  .bar-chart { position: relative; }
+  .bar-chart svg { width: 100%; display: block; }
+
+  /* LINE CHART */
+  .line-chart svg { width: 100%; display: block; }
+
+  /* DAILY TABLE */
+  table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  thead tr th {
+    color: var(--muted2);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+  }
+  thead tr th:first-child { text-align: left; }
+  tbody tr td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    color: var(--text);
+  }
+  tbody tr td:first-child { text-align: left; color: var(--muted2); }
+  tbody tr:hover td { background: var(--surface2); }
+  .val-good { color: var(--c3) !important; }
+  .val-warn { color: var(--c4) !important; }
+  .val-bad { color: var(--c5) !important; }
+  .val-blue { color: var(--c1) !important; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .pill-green { background: rgba(16,185,129,0.15); color: var(--c3); }
+  .pill-amber { background: rgba(245,158,11,0.15); color: var(--c4); }
+  .pill-red { background: rgba(239,68,68,0.15); color: var(--c5); }
+  .pill-blue { background: rgba(59,130,246,0.15); color: var(--c1); }
+
+  /* FUNNEL total */
+  .total-funnel { display: flex; flex-direction: column; gap: 6px; }
+  .tf-row { display: flex; align-items: center; gap: 10px; }
+  .tf-label { width: 140px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--muted2); text-align: right; flex-shrink: 0; }
+  .tf-bar-wrap { flex: 1; height: 30px; background: var(--surface2); border-radius: 4px; position: relative; overflow: hidden; }
+  .tf-bar { height: 100%; border-radius: 4px; position: absolute; left: 0; }
+  .tf-bar-text { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; color: #fff; }
+  .tf-pct { width: 55px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 11px; flex-shrink: 0; }
+  .tf-arrow { padding-left: 150px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+
+  /* INSIGHTS */
+  .insight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .insight {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .itag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
+  .itag-g { background: rgba(16,185,129,0.12); color: var(--c3); }
+  .itag-a { background: rgba(245,158,11,0.12); color: var(--c4); }
+  .itag-r { background: rgba(239,68,68,0.12); color: var(--c5); }
+  .itag-b { background: rgba(59,130,246,0.12); color: var(--c1); }
+  .insight h4 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .insight p { font-size: 12px; color: var(--muted2); line-height: 1.7; }
+  .imet { font-family: 'IBM Plex Mono', monospace; font-size: 22px; font-weight: 700; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .legend-line { width: 20px; height: 2px; border-radius: 1px; }
+
+  /* RECS */
+  .rec { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .rec-row { display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+  .rec-row:last-child { border-bottom: none; }
+  .rec-n { width: 24px; height: 24px; border-radius: 5px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--c1); flex-shrink: 0; margin-top: 1px; border: 1px solid var(--border2); }
+  .rec-body h4 { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+  .rec-body p { font-size: 12px; color: var(--muted2); line-height: 1.7; }
+  .mono { font-family: 'IBM Plex Mono', monospace; color: var(--c1); }
+
+  .phase-badge {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <h1>夸克AI弹窗推广<br><span>全量历史数据分析</span></h1>
+      <p>SMART_RECOMMEND · 2026-02-09 → 2026-02-24 · 16 Days</p>
+    </div>
+    <div class="header-right">
+      <div>数据周期 <b>16天</b></div>
+      <div>总触达人次 <b>302,200+</b></div>
+      <div>累计安装 <b>1,940+</b></div>
+      <div>整体安装转化率 <b>~0.64%</b></div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="sec-label">累计核心指标（全周期）</div>
+  <div class="kpi-row">
+    <div class="kpi b1">
+      <div class="kpi-l">START 总启动</div>
+      <div class="kpi-v">302.2K</div>
+      <div class="kpi-s">总次数</div>
+    </div>
+    <div class="kpi b2">
+      <div class="kpi-l">POP_SHOW 总展示</div>
+      <div class="kpi-v">235.2K</div>
+      <div class="kpi-s">展示率 77.8%</div>
+    </div>
+    <div class="kpi b3">
+      <div class="kpi-l">POP_CLICK 总点击</div>
+      <div class="kpi-v">2,224</div>
+      <div class="kpi-s">弹窗CTR 0.95%</div>
+    </div>
+    <div class="kpi b4">
+      <div class="kpi-l">DOWN_END_SUC 安装</div>
+      <div class="kpi-v">1,940</div>
+      <div class="kpi-s">点击→安装 87.2%</div>
+    </div>
+    <div class="kpi b5">
+      <div class="kpi-l">BREAK 中断</div>
+      <div class="kpi-v">67.5K</div>
+      <div class="kpi-s">占启动 22.3%</div>
+    </div>
+  </div>
+
+  <!-- 阶段说明 + 每日流量趋势 -->
+  <div class="sec-label">每日流量趋势</div>
+  <div class="card">
+    <div class="card-title">每日 start / pop_show / pop_click 趋势</div>
+    <div class="card-sub">
+      <span class="phase-badge" style="color:#6b7280;border-color:#374151;">灰测期</span> 2/9–2/10 极小量级 &nbsp;
+      <span class="phase-badge" style="color:#3b82f6;border-color:#1d4ed8;">灰度扩量</span> 2/11–2/13 &nbsp;
+      <span class="phase-badge" style="color:#8b5cf6;border-color:#6d28d9;">稳定期</span> 2/14–2/20 &nbsp;
+      <span class="phase-badge" style="color:#10b981;border-color:#065f46;">正式放量</span> 2/21–2/24
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-line" style="background:var(--c1);"></div> start（启动）</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--c2);"></div> pop_show（弹窗展示）</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--c3);height:3px;"></div> pop_click × 10（放大10倍便于观察）</div>
+    </div>
+    <svg id="trend-chart" viewBox="0 0 1000 260" style="width:100%;display:block;"></svg>
+  </div>
+
+  <!-- CTR trend + install rate -->
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">每日弹窗点击率（CTR）趋势</div>
+      <div class="card-sub">排除 2/9–2/10 灰测异常数据；稳定期 CTR 约 0.75%–1.5%</div>
+      <svg id="ctr-chart" viewBox="0 0 600 200" style="width:100%;display:block;"></svg>
+    </div>
+    <div class="card">
+      <div class="card-title">点击→安装转化率</div>
+      <div class="card-sub">（down_end_suc / pop_click）按天</div>
+      <svg id="install-chart" viewBox="0 0 400 200" style="width:100%;display:block;"></svg>
+    </div>
+  </div>
+
+  <!-- 总漏斗 -->
+  <div class="sec-label">全周期汇总漏斗（排除灰测 2/9–2/10）</div>
+  <div class="card">
+    <div class="card-title">核心转化漏斗（次数）</div>
+    <div class="card-sub">以最大值为100%基准，括号内为相对上一步的转化率</div>
+    <div class="total-funnel" style="margin-top:8px;">
+      <div class="tf-row">
+        <div class="tf-label">start 启动</div>
+        <div class="tf-bar-wrap"><div class="tf-bar" style="width:100%;background:linear-gradient(90deg,#3b82f6,#2563eb);"></div><div class="tf-bar-text">301,958</div></div>
+        <div class="tf-pct" style="color:var(--c1);">100%</div>
+      </div>
+      <div class="tf-arrow">↓ 77.8%</div>
+      <div class="tf-row">
+        <div class="tf-label">promotion_trigger</div>
+        <div class="tf-bar-wrap"><div class="tf-bar" style="width:77.8%;background:linear-gradient(90deg,#6366f1,#4f46e5);"></div><div class="tf-bar-text">235,068（合并估算）</div></div>
+        <div class="tf-pct" style="color:#6366f1;">77.8%</div>
+      </div>
+      <div class="tf-arrow">↓ 96.4%（稳定）</div>
+      <div class="tf-row">
+        <div class="tf-label">pop_show 弹窗曝光</div>
+        <div class="tf-bar-wrap"><div class="tf-bar" style="width:75%;background:linear-gradient(90deg,#8b5cf6,#7c3aed);"></div><div class="tf-bar-text">235,180</div></div>
+        <div class="tf-pct" style="color:var(--c2);">77.9%</div>
+      </div>
+      <div class="tf-arrow">↓ 0.95% ← 最大流失点</div>
+      <div class="tf-row">
+        <div class="tf-label">pop_click 弹窗点击</div>
+        <div class="tf-bar-wrap"><div class="tf-bar" style="width:0.74%;background:linear-gradient(90deg,#10b981,#059669);"></div><div class="tf-bar-text">2,224</div></div>
+        <div class="tf-pct" style="color:var(--c3);">0.74%</div>
+      </div>
+      <div class="tf-arrow">↓ 96.5%</div>
+      <div class="tf-row">
+        <div class="tf-label">down_start 开始下载</div>
+        <div class="tf-bar-wrap"><div class="tf-bar" style="width:0.71%;background:linear-gradient(90deg,#f59e0b,#d97706);"></div><div class="tf-bar-text">2,147</div></div>
+        <div class="tf-pct" style="color:var(--c4);">0.71%</div>
+      </div>
+      <div class="tf-arrow">↓ 90.4%</div>
+      <div class="tf-row">
+        <div class="tf-label">down_end_suc 安装成功</div>
+        <div class="tf-bar-wrap"><div class="tf-bar" style="width:0.64%;background:linear-gradient(90deg,#f97316,#ea580c);"></div><div class="tf-bar-text">1,940</div></div>
+        <div class="tf-pct" style="color:#f97316;">0.64%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 每日明细表 -->
+  <div class="sec-label">每日数据明细</div>
+  <div class="card">
+    <div class="card-title">关键指标日报</div>
+    <div class="card-sub">CTR = pop_click / pop_show；点击→安装 = down_end_suc / pop_click</div>
+    <table>
+      <thead>
+        <tr>
+          <th>日期</th>
+          <th>start</th>
+          <th>pop_show</th>
+          <th>展示率</th>
+          <th>pop_click</th>
+          <th>CTR</th>
+          <th>安装成功</th>
+          <th>点击→安装</th>
+          <th>break</th>
+          <th>break率</th>
+          <th>阶段</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+  <!-- 关键洞察 -->
+  <div class="sec-label">关键洞察</div>
+  <div class="insight-grid">
+    <div class="insight">
+      <div class="itag itag-b">流量增长</div>
+      <div class="imet" style="color:var(--c1);">55.6×</div>
+      <h4>16天流量高速放量</h4>
+      <p>从 2/11 的 1,861 次启动，到 2/24 的 73,318 次，增长约 55.6 倍。2/13 出现单日最高峰（71,160），随后短暂回落再稳步增长，2/24 创新高。</p>
+    </div>
+    <div class="insight">
+      <div class="itag itag-r">核心瓶颈</div>
+      <div class="imet" style="color:var(--c5);">0.95%</div>
+      <h4>弹窗点击率始终低位</h4>
+      <p>进入稳定期后 CTR 稳定在 0.75%–1.0% 之间，始终未能突破 2%。灰测期（2/9–2/10）数据异常偏高（18%–31%），推测为白名单用户，不具代表性。</p>
+    </div>
+    <div class="insight">
+      <div class="itag itag-g">亮点</div>
+      <div class="imet" style="color:var(--c3);">87.2%</div>
+      <h4>点击后安装转化优秀</h4>
+      <p>稳定期整体 pop_click → down_end_suc 约 87%，2/16 甚至达 100%（小样本）。说明下载安装链路稳定可靠，无需重点治理。</p>
+    </div>
+    <div class="insight">
+      <div class="itag itag-a">关注</div>
+      <div class="imet" style="color:var(--c4);">22.3%</div>
+      <h4>Break 中断率持续偏高</h4>
+      <p>全周期 break 总次数达 67,519，稳定期每天约占 start 的 20%–25%。2/13 单日 break 达 14,935 次。需排查具体触发场景，是否影响用户体验。</p>
+    </div>
+    <div class="insight">
+      <div class="itag itag-r">异常</div>
+      <div class="imet" style="color:var(--c5);">2/13</div>
+      <h4>2月13日流量异常峰值</h4>
+      <p>2/13 启动 71,160 次，是前一天（2/12: 24,838）的 2.86 倍，2/14 骤降至 3,942。疑似存在集中推送事件，建议结合业务背景确认原因。</p>
+    </div>
+    <div class="insight">
+      <div class="itag itag-b">趋势</div>
+      <div class="imet" style="color:var(--c1);">+49%</div>
+      <h4>正式放量增势明显</h4>
+      <p>2/21 起再次大规模放量，2/21→2/24 四天 start 从 38,062 → 73,318，累计增幅 +93%，2/24 安装绝对量达全周期单日最高（409 次）。</p>
+    </div>
+  </div>
+
+  <!-- 优化建议 -->
+  <div class="sec-label">优化建议</div>
+  <div class="rec">
+    <div class="rec-row">
+      <div class="rec-n">01</div>
+      <div class="rec-body">
+        <h4>重点突破弹窗 CTR —— 这是唯一真正的核心瓶颈</h4>
+        <p>CTR 长期稳定在 <span class="mono">0.75%–1.0%</span>，且放量后没有改善趋势，说明这是弹窗本身的问题而非流量质量问题。建议 A/B 测试弹窗文案（利益点前置）、视觉样式（强化 CTA 按钮）和触发时机（避免打断核心操作流程）。灰测期 CTR 31% 的历史数据说明用户对此功能存在需求，关键在于呈现方式。</p>
+      </div>
+    </div>
+    <div class="rec-row">
+      <div class="rec-n">02</div>
+      <div class="rec-body">
+        <h4>调查 2/13 流量峰值背景，评估重现可能性</h4>
+        <p>2/13 单日启动 <span class="mono">71,160</span>，是稳定期日均的约 25 倍，但随即骤降。需确认此次峰值来源（推送、活动、曝光？），若为可复现的推广行为，可形成规律性放量策略，并在峰值前准备好弹窗优化版本以提高转化。</p>
+      </div>
+    </div>
+    <div class="rec-row">
+      <div class="rec-n">03</div>
+      <div class="rec-body">
+        <h4>深入分析 break 场景，降低 22% 中断率</h4>
+        <p>break 占 start 稳定维持在 <span class="mono">~20%</span>，绝对量随放量不断增大。建议埋点细化 break 的触发节点，区分「弹窗前中断」与「弹窗后中断」，分别针对性治理。若属于弹窗展示时机不当导致用户主动退出，可考虑场景过滤规则。</p>
+      </div>
+    </div>
+    <div class="rec-row">
+      <div class="rec-n">04</div>
+      <div class="rec-body">
+        <h4>持续监控 pop_notips 累计用户，防止过度打扰</h4>
+        <p>全周期 pop_notips 累计约 <span class="mono">5,000+</span> 用户已主动屏蔽，该群体应纳入免推名单。同时关注 kk_pop_timeout（超时关闭）用户，这类用户可能因弹窗出现时机不佳而离开，可作为时机优化的信号。</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// =================== DATA ===================
+const rawData = [
+  {d:'2/09', start:132, trigger:70, pop_show:70, pop_click:22, down_start:14, down_suc:0, install:0, fail:0, brk:74, close:15, notips:12, timeout:0},
+  {d:'2/10', start:110, trigger:70, pop_show:60, pop_click:11, down_start:12, down_suc:0, install:0, fail:0, brk:66, close:33, notips:0, timeout:0},
+  {d:'2/11', start:1861, trigger:1345, pop_show:1269, pop_click:27, down_start:20, down_suc:12, install:10, fail:0, brk:478, close:1206, notips:24, timeout:39},
+  {d:'2/12', start:24838, trigger:18810, pop_show:18121, pop_click:169, down_start:147, down_suc:128, install:124, fail:19, brk:5327, close:17691, notips:401, timeout:540},
+  {d:'2/13', start:71160, trigger:54036, pop_show:52061, pop_click:388, down_start:364, down_suc:322, install:320, fail:36, brk:14935, close:51285, notips:1130, timeout:1393},
+  {d:'2/14', start:3942, trigger:2645, pop_show:2535, pop_click:36, down_start:31, down_suc:29, install:29, fail:0, brk:1157, close:2422, notips:65, timeout:101},
+  {d:'2/15', start:2728, trigger:1892, pop_show:1819, pop_click:36, down_start:26, down_suc:24, install:24, fail:0, brk:751, close:1751, notips:52, timeout:62},
+  {d:'2/16', start:2249, trigger:1647, pop_show:1582, pop_click:12, down_start:12, down_suc:12, install:12, fail:0, brk:523, close:1519, notips:44, timeout:37},
+  {d:'2/17', start:2048, trigger:1507, pop_show:1460, pop_click:12, down_start:12, down_suc:11, install:11, fail:0, brk:456, close:1377, notips:66, timeout:38},
+  {d:'2/18', start:2215, trigger:1661, pop_show:1616, pop_click:20, down_start:19, down_suc:15, install:15, fail:0, brk:500, close:1573, notips:51, timeout:43},
+  {d:'2/19', start:2184, trigger:1672, pop_show:1624, pop_click:25, down_start:21, down_suc:18, install:18, fail:0, brk:445, close:1617, notips:33, timeout:47},
+  {d:'2/20', start:2256, trigger:1721, pop_show:1668, pop_click:14, down_start:14, down_suc:12, install:12, fail:0, brk:491, close:1622, notips:40, timeout:48},
+  {d:'2/21', start:38062, trigger:29517, pop_show:28688, pop_click:308, down_start:291, down_suc:265, install:263, fail:23, brk:7616, close:27819, notips:637, timeout:715},
+  {d:'2/22', start:45313, trigger:34878, pop_show:33870, pop_click:300, down_start:276, down_suc:250, install:249, fail:21, brk:9300, close:33066, notips:751, timeout:907},
+  {d:'2/23', start:49782, trigger:37735, pop_show:36496, pop_click:341, down_start:315, down_suc:293, install:294, fail:17, brk:10769, close:35462, notips:874, timeout:934},
+  {d:'2/24', start:73318, trigger:54843, pop_show:52879, pop_click:483, down_start:449, down_suc:412, install:409, fail:32, brk:15996, close:51796, notips:1200, timeout:1360},
+];
+
+const phases = {
+  '2/09':'灰测','2/10':'灰测',
+  '2/11':'灰度扩量','2/12':'灰度扩量','2/13':'灰度扩量',
+  '2/14':'稳定期','2/15':'稳定期','2/16':'稳定期','2/17':'稳定期','2/18':'稳定期','2/19':'稳定期','2/20':'稳定期',
+  '2/21':'正式放量','2/22':'正式放量','2/23':'正式放量','2/24':'正式放量',
+};
+const phaseColors = {'灰测':'#4b5563','灰度扩量':'#3b82f6','稳定期':'#8b5cf6','正式放量':'#10b981'};
+
+// =================== TABLE ===================
+const tbody = document.getElementById('table-body');
+rawData.forEach(r => {
+  const showRate = r.pop_show / r.start * 100;
+  const ctr = r.pop_click / r.pop_show * 100;
+  const installRate = r.pop_click > 0 ? r.install / r.pop_click * 100 : 0;
+  const brkRate = r.brk / r.start * 100;
+  const phase = phases[r.d];
+  const phaseColor = phaseColors[phase];
+
+  const ctrClass = ctr > 2 ? 'val-blue' : ctr > 1 ? 'val-good' : ctr > 0 ? 'val-warn' : '';
+  const irClass = installRate > 80 ? 'val-good' : installRate > 60 ? 'val-warn' : 'val-bad';
+  const brkClass = brkRate > 20 ? 'val-bad' : brkRate > 15 ? 'val-warn' : 'val-good';
+
+  tbody.innerHTML += `<tr>
+    <td>${r.d}</td>
+    <td>${r.start.toLocaleString()}</td>
+    <td>${r.pop_show.toLocaleString()}</td>
+    <td class="${showRate > 70 ? 'val-good' : 'val-warn'}">${showRate.toFixed(1)}%</td>
+    <td>${r.pop_click}</td>
+    <td class="${ctrClass}">${r.pop_show > 0 ? ctr.toFixed(2)+'%' : '-'}</td>
+    <td>${r.install}</td>
+    <td class="${irClass}">${installRate > 0 ? installRate.toFixed(1)+'%' : '-'}</td>
+    <td>${r.brk.toLocaleString()}</td>
+    <td class="${brkClass}">${brkRate.toFixed(1)}%</td>
+    <td><span class="pill" style="background:${phaseColor}22;color:${phaseColor};border:1px solid ${phaseColor}44;">${phase}</span></td>
+  </tr>`;
+});
+
+// =================== TREND CHART ===================
+function drawTrend() {
+  const svg = document.getElementById('trend-chart');
+  const W = 1000, H = 260, pad = {l:50,r:20,t:20,b:30};
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+  const n = rawData.length;
+
+  const maxVal = Math.max(...rawData.map(d => d.start));
+  const barW = (cw / n) * 0.4;
+  const barW2 = (cw / n) * 0.35;
+
+  const xPos = i => pad.l + (i + 0.5) * (cw / n);
+  const yPos = v => pad.t + ch - (v / maxVal) * ch;
+
+  let out = '';
+
+  // Phase backgrounds
+  const phaseRanges = [
+    {from:0,to:1,color:'#4b5563'},
+    {from:2,to:4,color:'#3b82f6'},
+    {from:5,to:11,color:'#8b5cf6'},
+    {from:12,to:15,color:'#10b981'},
+  ];
+  phaseRanges.forEach(p => {
+    const x1 = pad.l + (p.from / n) * cw;
+    const x2 = pad.l + ((p.to + 1) / n) * cw;
+    out += `<rect x="${x1}" y="${pad.t}" width="${x2-x1}" height="${ch}" fill="${p.color}" opacity="0.04" rx="2"/>`;
+  });
+
+  // Bars: start
+  rawData.forEach((d, i) => {
+    const x = xPos(i) - barW;
+    const h = (d.start / maxVal) * ch;
+    const y = pad.t + ch - h;
+    out += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="#3b82f6" opacity="0.7" rx="2"/>`;
+  });
+
+  // Bars: pop_show
+  rawData.forEach((d, i) => {
+    const x = xPos(i);
+    const h = (d.pop_show / maxVal) * ch;
+    const y = pad.t + ch - h;
+    out += `<rect x="${x}" y="${y}" width="${barW2}" height="${h}" fill="#8b5cf6" opacity="0.7" rx="2"/>`;
+  });
+
+  // Line: pop_click * 10
+  const clickScale = 10;
+  let linePath = '';
+  rawData.forEach((d, i) => {
+    const x = xPos(i);
+    const y = yPos(Math.min(d.pop_click * clickScale, maxVal));
+    linePath += (i === 0 ? `M${x},${y}` : ` L${x},${y}`);
+  });
+  out += `<path d="${linePath}" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linejoin="round"/>`;
+  rawData.forEach((d, i) => {
+    const x = xPos(i);
+    const y = yPos(Math.min(d.pop_click * clickScale, maxVal));
+    out += `<circle cx="${x}" cy="${y}" r="3.5" fill="#10b981"/>`;
+  });
+
+  // X labels
+  rawData.forEach((d, i) => {
+    const x = xPos(i);
+    out += `<text x="${x}" y="${H - 8}" text-anchor="middle" fill="#4b5563" font-size="10" font-family="IBM Plex Mono">${d.d}</text>`;
+  });
+
+  // Y labels
+  [0, 0.25, 0.5, 0.75, 1].forEach(f => {
+    const y = pad.t + ch - f * ch;
+    const v = Math.round(f * maxVal / 1000);
+    out += `<text x="${pad.l - 6}" y="${y + 4}" text-anchor="end" fill="#374151" font-size="10" font-family="IBM Plex Mono">${v}K</text>`;
+    out += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y}" y2="${y}" stroke="#1a1f2c" stroke-width="1"/>`;
+  });
+
+  svg.innerHTML = out;
+}
+
+// =================== CTR CHART ===================
+function drawCTR() {
+  const svg = document.getElementById('ctr-chart');
+  const W = 600, H = 200, pad = {l:45,r:15,t:15,b:30};
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  const validData = rawData.filter(d => d.pop_show > 100);
+  const ctrs = validData.map(d => d.pop_click / d.pop_show * 100);
+  const maxCTR = Math.max(...ctrs) * 1.2;
+  const n = validData.length;
+
+  const xPos = i => pad.l + (i + 0.5) * (cw / n);
+  const yPos = v => pad.t + ch - (v / maxCTR) * ch;
+
+  let out = '';
+
+  // Reference line 1%
+  const y1pct = yPos(1);
+  out += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y1pct}" y2="${y1pct}" stroke="#374151" stroke-dasharray="4,3" stroke-width="1"/>`;
+  out += `<text x="${W-pad.r+2}" y="${y1pct+4}" fill="#4b5563" font-size="9" font-family="IBM Plex Mono">1%</text>`;
+
+  // Area
+  let areaPath = `M${xPos(0)},${pad.t+ch}`;
+  validData.forEach((d, i) => {
+    areaPath += ` L${xPos(i)},${yPos(ctrs[i])}`;
+  });
+  areaPath += ` L${xPos(n-1)},${pad.t+ch} Z`;
+  out += `<defs><linearGradient id="cg" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#f59e0b" stop-opacity="0.3"/><stop offset="100%" stop-color="#f59e0b" stop-opacity="0.02"/></linearGradient></defs>`;
+  out += `<path d="${areaPath}" fill="url(#cg)"/>`;
+
+  // Line
+  let linePath = '';
+  validData.forEach((d, i) => {
+    linePath += (i === 0 ? `M${xPos(i)},${yPos(ctrs[i])}` : ` L${xPos(i)},${yPos(ctrs[i])}`);
+  });
+  out += `<path d="${linePath}" fill="none" stroke="#f59e0b" stroke-width="2"/>`;
+  validData.forEach((d, i) => {
+    const x = xPos(i); const y = yPos(ctrs[i]);
+    out += `<circle cx="${x}" cy="${y}" r="3" fill="#f59e0b"/>`;
+    out += `<text x="${x}" y="${y-7}" text-anchor="middle" fill="#f59e0b" font-size="8.5" font-family="IBM Plex Mono">${ctrs[i].toFixed(2)}%</text>`;
+  });
+
+  // X labels
+  validData.forEach((d, i) => {
+    out += `<text x="${xPos(i)}" y="${H-8}" text-anchor="middle" fill="#4b5563" font-size="9" font-family="IBM Plex Mono">${d.d}</text>`;
+  });
+
+  // Y
+  [0,1,2,3].forEach(v => {
+    const y = yPos(v);
+    if (y < pad.t || y > pad.t + ch) return;
+    out += `<text x="${pad.l-4}" y="${y+3}" text-anchor="end" fill="#374151" font-size="9" font-family="IBM Plex Mono">${v}%</text>`;
+    out += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="#1a1f2c" stroke-width="1"/>`;
+  });
+
+  svg.innerHTML = out;
+}
+
+// =================== INSTALL RATE CHART ===================
+function drawInstall() {
+  const svg = document.getElementById('install-chart');
+  const W = 400, H = 200, pad = {l:40,r:15,t:15,b:30};
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  const validData = rawData.filter(d => d.pop_click >= 10);
+  const rates = validData.map(d => d.install / d.pop_click * 100);
+  const n = validData.length;
+  const barW = (cw / n) * 0.6;
+  const xPos = i => pad.l + (i + 0.5) * (cw / n);
+  const yPos = v => pad.t + ch - (v / 110) * ch;
+
+  let out = '';
+
+  // 100% line
+  const y100 = yPos(100);
+  out += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y100}" y2="${y100}" stroke="#374151" stroke-dasharray="3,2" stroke-width="1"/>`;
+  out += `<text x="${W-pad.r+2}" y="${y100+3}" fill="#4b5563" font-size="9" font-family="IBM Plex Mono">100%</text>`;
+
+  validData.forEach((d, i) => {
+    const rate = rates[i];
+    const x = xPos(i) - barW/2;
+    const h = (rate / 110) * ch;
+    const y = pad.t + ch - h;
+    const color = rate >= 80 ? '#10b981' : rate >= 60 ? '#f59e0b' : '#ef4444';
+    out += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" fill="${color}" opacity="0.75" rx="2"/>`;
+    out += `<text x="${xPos(i)}" y="${y-5}" text-anchor="middle" fill="${color}" font-size="9" font-family="IBM Plex Mono">${rate.toFixed(0)}%</text>`;
+  });
+
+  validData.forEach((d, i) => {
+    out += `<text x="${xPos(i)}" y="${H-8}" text-anchor="middle" fill="#4b5563" font-size="9" font-family="IBM Plex Mono">${d.d}</text>`;
+  });
+
+  [0,25,50,75,100].forEach(v => {
+    const y = yPos(v);
+    out += `<text x="${pad.l-4}" y="${y+3}" text-anchor="end" fill="#374151" font-size="9" font-family="IBM Plex Mono">${v}%</text>`;
+    out += `<line x1="${pad.l}" x2="${W-pad.r}" y1="${y}" y2="${y}" stroke="#1a1f2c" stroke-width="1"/>`;
+  });
+
+  svg.innerHTML = out;
+}
+
+drawTrend();
+drawCTR();
+drawInstall();
+</script>
+</body>
+</html>

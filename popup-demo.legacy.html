@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI应用推广弹窗 - 交互Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 模拟桌面背景 */
+        .desktop {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+        }
+
+        /* 桌面图标 */
+        .desktop-icons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .desktop-icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .desktop-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .desktop-icon .icon-img {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto;
+        }
+
+        .desktop-icon span {
+            display: block;
+            color: #333;
+            font-size: 12px;
+            margin-top: 4px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+        }
+
+        /* 任务栏 */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(240, 240, 245, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            z-index: 50;
+        }
+
+        .taskbar-center {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .taskbar-icon {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .taskbar-icon:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .taskbar-right {
+            position: absolute;
+            right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .taskbar-time {
+            text-align: right;
+        }
+
+        .taskbar-time .time {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .taskbar-time .date {
+            font-size: 11px;
+            color: #666;
+        }
+
+        /* 控制面板 */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            z-index: 1000;
+            width: 280px;
+        }
+
+        .control-panel h3 {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-panel h3::before {
+            content: '⚙️';
+        }
+
+        .control-group {
+            margin-bottom: 14px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .control-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s;
+            background: white;
+        }
+
+        .control-group select:focus {
+            border-color: #667eea;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-top: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 14px;
+            font-size: 11px;
+            color: #666;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-value {
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* ==================== 样式一：右下角推广弹窗 ==================== */
+        .popup-container {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            z-index: 200;
+            transform-origin: bottom right;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8) translateY(20px);
+        }
+
+        .popup-container.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1) translateY(0);
+        }
+
+        .popup-container:hover {
+            transform: scale(1.08);
+        }
+
+        .popup-card {
+            width: 420px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .popup-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .popup-title-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #FF9500 0%, #FF5E00 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .popup-action-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.2s;
+        }
+
+        .popup-action-btn:hover {
+            background: #e8e8e8;
+            color: #333;
+        }
+
+        .popup-action-btn.close:hover {
+            background: #ff5f57;
+            color: white;
+        }
+
+        .popup-content {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .popup-left {
+            flex: 1;
+        }
+
+        .feature-tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .feature-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: #f5f7fa;
+            border: 1px solid #e8edf2;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .feature-tag:hover {
+            background: #eef1f5;
+            border-color: #d0d7e0;
+        }
+
+        .feature-tag .tag-icon {
+            font-size: 14px;
+        }
+
+        .ai-search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .ai-search-box:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .ai-search-box .search-icon {
+            font-size: 16px;
+        }
+
+        .popup-right {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0 10px;
+        }
+
+        .brand-logo {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #00B4FF 0%, #0095FF 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 15px rgba(0, 180, 255, 0.3);
+        }
+
+        .brand-logo svg {
+            width: 32px;
+            height: 32px;
+            fill: white;
+        }
+
+        .brand-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .brand-slogan {
+            font-size: 13px;
+            color: #00B4FF;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .brand-desc {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .popup-footer {
+            padding: 0 20px 20px;
+        }
+
+        .cta-button {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #a78bfa 0%, #818cf8 50%, #6366f1 100%);
+            border: none;
+            border-radius: 24px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .cta-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .cta-button .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 24px;
+        }
+
+        .cta-button .btn-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .qq-theme .brand-logo {
+            background: linear-gradient(135deg, #12B7F5 0%, #0099FF 100%);
+        }
+
+        .qq-theme .brand-slogan {
+            color: #12B7F5;
+        }
+
+        .quark-theme .brand-logo {
+            background: linear-gradient(135deg, #00B4FF 0%, #0095FF 100%);
+        }
+
+        /* ==================== 样式二：贴条 + 英雄卡片 ==================== */
+        
+        /* 贴条容器 */
+        .strip-wrapper {
+            position: fixed;
+            bottom: 58px; /* 距任务栏顶部 10px */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .strip-wrapper.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 贴条 Promo Strip */
+        .promo-strip {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            height: 56px;
+            width: 940px;
+            padding: 0 20px;
+            background: rgba(26, 26, 46, 0.96);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+        }
+
+        /* 收益文案 */
+        .strip-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* 产品按钮组 */
+        .strip-products {
+            display: flex;
+            gap: 12px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .product-btn {
+            position: relative;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s;
+            border: none;
+            white-space: nowrap;
+        }
+
+        /* 主推按钮样式 */
+        .product-btn.primary {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .product-btn.primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        }
+
+        /* 次级按钮样式 */
+        .product-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .product-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 关闭区域 */
+        .strip-close-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        /* 设置按钮 */
+        .strip-settings-wrapper {
+            position: relative;
+        }
+
+        .strip-settings {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s;
+        }
+
+        .strip-settings:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .strip-settings.active {
+            background: rgba(255, 255, 255, 0.18);
+            color: white;
+            transform: rotate(45deg);
+        }
+
+        /* 设置弹窗 */
+        .settings-popover {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            right: 0;
+            width: 180px;
+            background: rgba(40, 40, 60, 0.98);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            padding: 8px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 300;
+        }
+
+        .settings-popover::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            right: 12px;
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-top: 7px solid rgba(40, 40, 60, 0.98);
+        }
+
+        .settings-popover.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .settings-title {
+            padding: 8px 14px 10px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .settings-option:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .settings-option .option-icon {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .strip-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .strip-close:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* ==================== 英雄卡片 Hero Card ==================== */
+        .hero-card {
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%) translateY(15px);
+            width: 560px;
+            background: rgba(26, 26, 46, 0.98);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid rgba(26, 26, 46, 0.98);
+        }
+
+        .hero-card.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+        /* 动态调整箭头位置 */
+        .hero-card[data-product="doubao"]::after {
+            left: 30%;
+        }
+        .hero-card[data-product="yuanbao"]::after {
+            left: 50%;
+        }
+        .hero-card[data-product="qianwen"]::after {
+            left: 70%;
+        }
+
+        /* 卡片头部 */
+        .hero-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hero-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .hero-logo.doubao {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+        }
+
+        .hero-logo.yuanbao {
+            background: linear-gradient(135deg, #ffd93d 0%, #f0c929 100%);
+        }
+
+        .hero-logo.qianwen {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+        }
+
+        .hero-title-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .hero-subtitle {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 2px;
+        }
+
+        .hero-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .hero-close:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
+        /* 卡片内容 */
+        .hero-content {
+            display: flex;
+            padding: 20px 24px;
+            gap: 24px;
+        }
+
+        /* 场景模块 */
+        .hero-scenes {
+            flex: 1;
+        }
+
+        .scene-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .scene-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scene-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .scene-tab.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+        }
+
+        .scene-content {
+            display: none;
+        }
+
+        .scene-content.active {
+            display: block;
+        }
+
+        .scene-list {
+            list-style: none;
+        }
+
+        .scene-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .scene-item:last-child {
+            border-bottom: none;
+        }
+
+        .scene-dot {
+            width: 6px;
+            height: 6px;
+            background: #3b82f6;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .scene-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.5;
+        }
+
+        /* 插画区域 */
+        .hero-illustration {
+            width: 180px;
+            height: 160px;
+            background: linear-gradient(135deg, #3b5998 0%, #4c70ba 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-illustration::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+        }
+
+        .hero-illustration-text {
+            font-size: 14px;
+            color: white;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        /* 卡片底部 */
+        .hero-footer {
+            padding: 16px 24px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-cta-btn {
+            width: 100%;
+            padding: 14px 32px;
+            background: #3b82f6;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .hero-cta-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+        }
+
+        .hero-cta-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Toast 提示 */
+        .toast {
+            position: fixed;
+            bottom: 140px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* 埋点事件日志 */
+        .event-log {
+            position: fixed;
+            bottom: 60px;
+            left: 20px;
+            width: 280px;
+            max-height: 180px;
+            background: rgba(0, 0, 0, 0.85);
+            border-radius: 12px;
+            padding: 14px;
+            overflow-y: auto;
+            z-index: 100;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        .event-log h4 {
+            color: #38ef7d;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+
+        .event-log .log-item {
+            font-size: 10px;
+            color: #ccc;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .event-log .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .event-log .log-time {
+            color: #666;
+            margin-right: 6px;
+        }
+
+        .event-log .log-event {
+            color: #f5576c;
+        }
+
+        /* 提示文字 */
+        .hint-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 模拟桌面 -->
+    <div class="desktop">
+        <!-- 桌面图标 -->
+        <div class="desktop-icons">
+            <div class="desktop-icon">
+                <div class="icon-img">📁</div>
+                <span>文件管理</span>
+            </div>
+            <div class="desktop-icon">
+                <div class="icon-img">🛒</div>
+                <span>应用市场</span>
+            </div>
+            <div class="desktop-icon">
+                <div class="icon-img">⚙️</div>
+                <span>系统设置</span>
+            </div>
+        </div>
+
+        <!-- 任务栏 (Windows 11 风格居中) -->
+        <div class="taskbar">
+            <div class="taskbar-center">
+                <div class="taskbar-icon">🪟</div>
+                <div class="taskbar-icon">🔍</div>
+                <div class="taskbar-icon">📁</div>
+                <div class="taskbar-icon">🌐</div>
+                <div class="taskbar-icon">📧</div>
+                <div class="taskbar-icon">🎵</div>
+            </div>
+            <div class="taskbar-right">
+                <span>🔊</span>
+                <span>🌐</span>
+                <span>中</span>
+                <div class="taskbar-time">
+                    <div class="time" id="currentTime">19:33</div>
+                    <div class="date" id="currentDate">2025/2/19</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div class="control-panel">
+        <h3>Demo 控制面板</h3>
+        
+        <div class="control-group">
+            <label>弹窗样式</label>
+            <select id="styleSelect">
+                <option value="corner">样式一：右下角卡片</option>
+                <option value="strip">样式二：贴条+英雄卡片</option>
+            </select>
+        </div>
+
+        <div class="control-group" id="productSelectGroup">
+            <label>选择推广产品（样式一）</label>
+            <select id="productSelect">
+                <option value="quark">夸克浏览器</option>
+                <option value="qq">QQ浏览器</option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="showPopup()">
+            🚀 展示弹窗
+        </button>
+        
+        <button class="btn btn-secondary" onclick="resetDemo()">
+            🔄 重置Demo
+        </button>
+
+        <div class="status-bar">
+            <div class="status-item">
+                <span>弹窗样式：</span>
+                <span class="status-value" id="styleStatus">右下角卡片</span>
+            </div>
+            <div class="status-item">
+                <span>弹窗状态：</span>
+                <span class="status-value" id="popupStatus">未展示</span>
+            </div>
+            <div class="status-item">
+                <span>事件计数：</span>
+                <span class="status-value" id="eventCount">0</span>
+            </div>
+        </div>
+
+        <p class="hint-text">样式二：hover产品按钮查看英雄卡片</p>
+    </div>
+
+    <!-- ==================== 样式一：右下角推广弹窗 ==================== -->
+    <div class="popup-container" id="popupContainer">
+        <div class="popup-card" id="popupCard">
+            <div class="popup-header">
+                <div class="popup-title">
+                    <div class="popup-title-icon">📦</div>
+                    <span>精品推荐</span>
+                </div>
+                <div class="popup-actions">
+                    <button class="popup-action-btn" onclick="minimizePopup()">−</button>
+                    <button class="popup-action-btn close" onclick="closePopup()">×</button>
+                </div>
+            </div>
+            <div class="popup-content">
+                <div class="popup-left">
+                    <div class="feature-tags">
+                        <div class="feature-tag">
+                            <span class="tag-icon">✏️</span>
+                            <span>写作</span>
+                        </div>
+                        <div class="feature-tag">
+                            <span class="tag-icon">🎙</span>
+                            <span>翻译</span>
+                        </div>
+                        <div class="feature-tag">
+                            <span class="tag-icon">📋</span>
+                            <span>总结</span>
+                        </div>
+                    </div>
+                    <div class="ai-search-box">
+                        <span class="search-icon">✨</span>
+                        <span>AI搜索 一框回答</span>
+                    </div>
+                </div>
+                <div class="popup-right">
+                    <div class="brand-logo" id="brandLogo">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" fill="white" opacity="0.2"/>
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                    </div>
+                    <div class="brand-name" id="brandName">夸克</div>
+                    <div class="brand-slogan" id="brandSlogan">您的AI搜索</div>
+                    <div class="brand-desc" id="brandDesc">精准 高效，随时唤起</div>
+                </div>
+            </div>
+            <div class="popup-footer">
+                <button class="cta-button" id="ctaButton" onclick="startInstall()">
+                    <div class="progress-bar" id="progressBar"></div>
+                    <span class="btn-text" id="btnText">立即体验</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== 样式二：贴条 + 英雄卡片 ==================== -->
+    <div class="strip-wrapper" id="stripWrapper">
+        <!-- 英雄卡片 -->
+        <div class="hero-card" id="heroCard" data-product="doubao">
+            <div class="hero-header">
+                <div class="hero-brand">
+                    <div class="hero-logo doubao" id="heroLogo">🤖</div>
+                    <div class="hero-title-group">
+                        <div class="hero-title" id="heroTitle">豆包</div>
+                        <div class="hero-subtitle" id="heroSubtitle">办公 & 创作 AI 助手</div>
+                    </div>
+                </div>
+                <button class="hero-close" onclick="hideHeroCard()">×</button>
+            </div>
+
+            <div class="hero-content">
+                <div class="hero-scenes">
+                    <div class="scene-tabs">
+                        <div class="scene-tab active" data-scene="office">💼 办公</div>
+                        <div class="scene-tab" data-scene="study">📚 学习</div>
+                        <div class="scene-tab" data-scene="create">🎨 创作</div>
+                    </div>
+
+                    <div class="scene-content active" id="sceneOffice">
+                        <ul class="scene-list">
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">一键生成工作汇报、周报、月报</div>
+                            </li>
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">智能撰写商务邮件、会议纪要</div>
+                            </li>
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">Excel/PPT 数据分析与优化建议</div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="scene-content" id="sceneStudy">
+                        <ul class="scene-list">
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">长文/PDF 文档智能总结摘要</div>
+                            </li>
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">提问式理解，深度解读复杂内容</div>
+                            </li>
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">多语言翻译，学术论文辅助阅读</div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="scene-content" id="sceneCreate">
+                        <ul class="scene-list">
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">营销文案、社媒内容一键生成</div>
+                            </li>
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">AI 绘图，快速生成配图素材</div>
+                            </li>
+                            <li class="scene-item">
+                                <div class="scene-dot"></div>
+                                <div class="scene-text">脑暴创意、故事续写、风格改写</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="hero-illustration" id="heroIllustration">
+                    <div class="hero-illustration-text">
+                        <div style="font-size: 32px; margin-bottom: 8px;">🤖</div>
+                        <div>产品示意图</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-footer">
+                <button class="hero-cta-btn" id="heroCta" onclick="installFromHero()">安装并启动</button>
+            </div>
+        </div>
+
+        <!-- 贴条 Promo Strip -->
+        <div class="promo-strip">
+            <div class="strip-text">发现适合您的 AI 助手，提升效率从此刻开始</div>
+            
+            <div class="strip-products">
+                <button class="product-btn primary" 
+                        data-product="doubao"
+                        onmouseenter="showHeroCard('doubao')"
+                        onclick="quickInstall('doubao')">
+                    体验豆包
+                </button>
+                <button class="product-btn secondary" 
+                        data-product="yuanbao"
+                        onmouseenter="showHeroCard('yuanbao')"
+                        onclick="quickInstall('yuanbao')">
+                    体验元宝
+                </button>
+                <button class="product-btn secondary" 
+                        data-product="qianwen"
+                        onmouseenter="showHeroCard('qianwen')"
+                        onclick="quickInstall('qianwen')">
+                    体验千问
+                </button>
+            </div>
+
+            <div class="strip-close-area">
+                <div class="strip-settings-wrapper">
+                    <button class="strip-settings" id="settingsBtn" onclick="toggleSettings(event)">⚙</button>
+                    <div class="settings-popover" id="settingsPopover">
+                        <div class="settings-title">提醒设置</div>
+                        <div class="settings-option" onclick="dismissStrip('7days')">
+                            <span class="option-icon">📅</span>
+                            <span>7天不再提示</span>
+                        </div>
+                        <div class="settings-option" onclick="dismissStrip('forever')">
+                            <span class="option-icon">🚫</span>
+                            <span>不再提示</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="strip-close" onclick="closeStrip()">×</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 事件日志 -->
+    <div class="event-log" id="eventLog">
+        <h4>📊 埋点事件日志</h4>
+        <div id="logContent"></div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // 产品配置
+        const products = {
+            quark: {
+                name: '夸克',
+                slogan: '您的AI搜索',
+                desc: '精准 高效，随时唤起',
+                theme: 'quark-theme',
+                app_id: 'quark',
+                tpi: 'APP_MARKET_001'
+            },
+            qq: {
+                name: 'QQ浏览器',
+                slogan: '您的智能助手',
+                desc: '快速 安全，畅享网络',
+                theme: 'qq-theme',
+                app_id: 'qqbrowser',
+                tpi: 'APP_MARKET_002'
+            }
+        };
+
+        // AI 产品配置（样式二）
+        const aiProducts = {
+            doubao: {
+                name: '豆包',
+                subtitle: '办公 & 创作 AI 助手',
+                icon: '🤖',
+                logoClass: 'doubao',
+                app_id: 'doubao',
+                tpi: 'STRIP_001',
+                scenes: {
+                    office: [
+                        '一键生成工作汇报、周报、月报',
+                        '智能撰写商务邮件、会议纪要',
+                        'Excel/PPT 数据分析与优化建议'
+                    ],
+                    study: [
+                        '长文/PDF 文档智能总结摘要',
+                        '提问式理解，深度解读复杂内容',
+                        '多语言翻译，学术论文辅助阅读'
+                    ],
+                    create: [
+                        '营销文案、社媒内容一键生成',
+                        'AI 绘图，快速生成配图素材',
+                        '脑暴创意、故事续写、风格改写'
+                    ]
+                }
+            },
+            yuanbao: {
+                name: '元宝',
+                subtitle: '腾讯全能 AI 助手',
+                icon: '💎',
+                logoClass: 'yuanbao',
+                app_id: 'yuanbao',
+                tpi: 'STRIP_002',
+                scenes: {
+                    office: [
+                        '智能会议记录与待办提取',
+                        '公文写作、合同审核辅助',
+                        '企业微信/钉钉消息智能回复'
+                    ],
+                    study: [
+                        '课程笔记整理与知识图谱',
+                        '论文查重与参考文献推荐',
+                        '外语学习、口语练习伙伴'
+                    ],
+                    create: [
+                        '小红书/公众号爆款文案',
+                        '短视频脚本与分镜建议',
+                        'Logo/海报 AI 设计生成'
+                    ]
+                }
+            },
+            qianwen: {
+                name: '通义千问',
+                subtitle: '阿里云智能 AI 大模型',
+                icon: '🌟',
+                logoClass: 'qianwen',
+                app_id: 'qianwen',
+                tpi: 'STRIP_003',
+                scenes: {
+                    office: [
+                        '代码编写与 Debug 助手',
+                        '技术文档自动生成',
+                        'API 接口智能调试'
+                    ],
+                    study: [
+                        '编程学习路径规划',
+                        '算法题解析与优化',
+                        '技术面试模拟训练'
+                    ],
+                    create: [
+                        '产品需求文档撰写',
+                        '技术博客内容创作',
+                        '开源项目 README 生成'
+                    ]
+                }
+            }
+        };
+
+        let currentProduct = 'quark';
+        let currentAIProduct = 'doubao';
+        let currentStyle = 'corner';
+        let eventCount = 0;
+        let isDownloading = false;
+        let heroCardTimeout = null;
+
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+            document.getElementById('currentDate').textContent = `${year}/${month}/${day}`;
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 记录埋点事件
+        function logEvent(eventName, params = {}) {
+            eventCount++;
+            const time = new Date().toLocaleTimeString();
+            const logContent = document.getElementById('logContent');
+            const logItem = document.createElement('div');
+            logItem.className = 'log-item';
+            logItem.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-event">${eventName}</span>
+            `;
+            logContent.insertBefore(logItem, logContent.firstChild);
+            
+            document.getElementById('eventCount').textContent = eventCount;
+            
+            console.log('📊 埋点事件:', {
+                event: eventName,
+                params: params,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // 显示弹窗
+        function showPopup() {
+            currentStyle = document.getElementById('styleSelect').value;
+            
+            // 先关闭所有弹窗
+            document.getElementById('popupContainer').classList.remove('active');
+            document.getElementById('stripWrapper').classList.remove('active');
+            hideHeroCard();
+
+            if (currentStyle === 'corner') {
+                document.getElementById('styleStatus').textContent = '右下角卡片';
+                currentProduct = document.getElementById('productSelect').value;
+                showCornerPopup(products[currentProduct]);
+            } else {
+                document.getElementById('styleStatus').textContent = '贴条+英雄卡片';
+                showStripPopup();
+            }
+
+            document.getElementById('popupStatus').textContent = '已展示';
+        }
+
+        // 显示样式一：右下角卡片
+        function showCornerPopup(product) {
+            document.getElementById('brandName').textContent = product.name;
+            document.getElementById('brandSlogan').textContent = product.slogan;
+            document.getElementById('brandDesc').textContent = product.desc;
+            
+            const popupCard = document.getElementById('popupCard');
+            popupCard.className = 'popup-card';
+            popupCard.classList.add(product.theme);
+
+            document.getElementById('ctaButton').disabled = false;
+            document.getElementById('btnText').textContent = '立即体验';
+            document.getElementById('progressBar').style.width = '0%';
+            isDownloading = false;
+
+            document.getElementById('popupContainer').classList.add('active');
+
+            logEvent('promotion_show', {
+                app_id: product.app_id,
+                style: 'corner'
+            });
+        }
+
+        // 显示样式二：贴条
+        function showStripPopup() {
+            document.getElementById('stripWrapper').classList.add('active');
+            
+            logEvent('strip_show', {
+                products: ['doubao', 'yuanbao', 'qianwen']
+            });
+        }
+
+        // 显示英雄卡片
+        function showHeroCard(productId) {
+            // 清除之前的延迟隐藏
+            if (heroCardTimeout) {
+                clearTimeout(heroCardTimeout);
+                heroCardTimeout = null;
+            }
+
+            currentAIProduct = productId;
+            const product = aiProducts[productId];
+            const heroCard = document.getElementById('heroCard');
+
+            // 更新卡片内容
+            heroCard.dataset.product = productId;
+            document.getElementById('heroTitle').textContent = product.name;
+            document.getElementById('heroSubtitle').textContent = product.subtitle;
+            document.getElementById('heroLogo').textContent = product.icon;
+            document.getElementById('heroLogo').className = 'hero-logo ' + product.logoClass;
+
+            // 更新插画
+            document.querySelector('.hero-illustration-text').innerHTML = `
+                <div style="font-size: 32px; margin-bottom: 8px;">${product.icon}</div>
+                <div>${product.name} 示意图</div>
+            `;
+
+            // 更新场景内容
+            updateSceneContent(product);
+
+            // 重置 Tab 到办公
+            document.querySelectorAll('.scene-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector('.scene-tab[data-scene="office"]').classList.add('active');
+            document.querySelectorAll('.scene-content').forEach(c => c.classList.remove('active'));
+            document.getElementById('sceneOffice').classList.add('active');
+
+            // 重置按钮状态
+            document.getElementById('heroCta').textContent = '安装并启动';
+            document.getElementById('heroCta').disabled = false;
+
+            // 显示卡片
+            heroCard.classList.add('show');
+
+            logEvent('hero_card_show', {
+                app_id: product.app_id,
+                trigger: 'hover'
+            });
+        }
+
+        // 更新场景内容
+        function updateSceneContent(product) {
+            const scenes = ['office', 'study', 'create'];
+            const sceneIds = ['sceneOffice', 'sceneStudy', 'sceneCreate'];
+
+            scenes.forEach((scene, index) => {
+                const container = document.getElementById(sceneIds[index]);
+                const list = container.querySelector('.scene-list');
+                list.innerHTML = product.scenes[scene].map(text => `
+                    <li class="scene-item">
+                        <div class="scene-dot"></div>
+                        <div class="scene-text">${text}</div>
+                    </li>
+                `).join('');
+            });
+        }
+
+        // 隐藏英雄卡片
+        function hideHeroCard() {
+            document.getElementById('heroCard').classList.remove('show');
+        }
+
+        // 延迟隐藏英雄卡片（鼠标移出后）
+        function scheduleHideHeroCard() {
+            heroCardTimeout = setTimeout(() => {
+                hideHeroCard();
+            }, 1500); // 1.5秒后自动收起
+        }
+
+        // 从英雄卡片安装
+        function installFromHero() {
+            const product = aiProducts[currentAIProduct];
+            const btn = document.getElementById('heroCta');
+
+            logEvent('hero_install_click', {
+                app_id: product.app_id,
+                tpi: product.tpi
+            });
+
+            btn.textContent = '下载中...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.textContent = '安装中...';
+                setTimeout(() => {
+                    btn.textContent = '✓ 已安装';
+                    showToast(`🎉 ${product.name} 安装成功！`);
+                    
+                    logEvent('install_complete', {
+                        app_id: product.app_id,
+                        source: 'hero_card'
+                    });
+                }, 1000);
+            }, 1500);
+        }
+
+        // 从贴条快速安装
+        function quickInstall(productId) {
+            const product = aiProducts[productId];
+            
+            logEvent('strip_install_click', {
+                app_id: product.app_id,
+                tpi: product.tpi
+            });
+
+            showToast(`正在安装 ${product.name}...`);
+
+            setTimeout(() => {
+                showToast(`🎉 ${product.name} 安装成功！`);
+                logEvent('install_complete', {
+                    app_id: product.app_id,
+                    source: 'strip'
+                });
+            }, 2000);
+        }
+
+        // 关闭贴条
+        function closeStrip() {
+            logEvent('strip_close', { reason: 'close_button' });
+            document.getElementById('stripWrapper').classList.remove('active');
+            hideHeroCard();
+            document.getElementById('popupStatus').textContent = '已关闭';
+            showToast('已关闭推荐');
+        }
+
+        // 切换设置弹窗
+        function toggleSettings(event) {
+            event.stopPropagation();
+            const popover = document.getElementById('settingsPopover');
+            const btn = document.getElementById('settingsBtn');
+            
+            if (popover.classList.contains('show')) {
+                popover.classList.remove('show');
+                btn.classList.remove('active');
+            } else {
+                popover.classList.add('show');
+                btn.classList.add('active');
+                logEvent('settings_open', {});
+            }
+        }
+
+        // 关闭设置弹窗
+        function closeSettings() {
+            document.getElementById('settingsPopover').classList.remove('show');
+            document.getElementById('settingsBtn').classList.remove('active');
+        }
+
+        // 不再提示
+        function dismissStrip(type) {
+            closeSettings();
+            logEvent('strip_dismiss', { type: type });
+            document.getElementById('stripWrapper').classList.remove('active');
+            hideHeroCard();
+            document.getElementById('popupStatus').textContent = '已关闭';
+            
+            if (type === '7days') {
+                showToast('7天内不再提示');
+            } else {
+                showToast('已设置不再提示');
+            }
+        }
+
+        // 关闭样式一弹窗
+        function closePopup() {
+            logEvent('promotion_close', {
+                app_id: products[currentProduct].app_id,
+                reason: 'close_button'
+            });
+            document.getElementById('popupContainer').classList.remove('active');
+            document.getElementById('popupStatus').textContent = '已关闭';
+            showToast('用户主动关闭弹窗');
+        }
+
+        function minimizePopup() {
+            logEvent('promotion_close', {
+                app_id: products[currentProduct].app_id,
+                reason: 'minimize'
+            });
+            document.getElementById('popupContainer').classList.remove('active');
+            document.getElementById('popupStatus').textContent = '已最小化';
+            showToast('弹窗已最小化');
+        }
+
+        // 样式一：开始安装
+        function startInstall() {
+            if (isDownloading) return;
+            isDownloading = true;
+
+            const product = products[currentProduct];
+            const btn = document.getElementById('ctaButton');
+            const btnText = document.getElementById('btnText');
+            const progressBar = document.getElementById('progressBar');
+
+            btn.disabled = true;
+
+            logEvent('promotion_click', {
+                app_id: product.app_id,
+                tpi: product.tpi
+            });
+
+            let progress = 0;
+            const downloadInterval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(downloadInterval);
+
+                    btnText.textContent = '安装中...';
+
+                    setTimeout(() => {
+                        logEvent('install_complete', {
+                            app_id: product.app_id
+                        });
+
+                        btnText.textContent = '✓ 安装完成';
+                        progressBar.style.width = '100%';
+                        showToast('🎉 安装成功！');
+                    }, 1500);
+                }
+                
+                progressBar.style.width = progress + '%';
+                btnText.textContent = `下载中 ${Math.round(progress)}%`;
+            }, 200);
+        }
+
+        // 重置Demo
+        function resetDemo() {
+            document.getElementById('popupContainer').classList.remove('active');
+            document.getElementById('stripWrapper').classList.remove('active');
+            hideHeroCard();
+            document.getElementById('popupStatus').textContent = '未展示';
+            document.getElementById('logContent').innerHTML = '';
+            
+            // 重置按钮
+            document.getElementById('btnText').textContent = '立即体验';
+            document.getElementById('ctaButton').disabled = false;
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('heroCta').textContent = '安装并启动';
+            document.getElementById('heroCta').disabled = false;
+            
+            eventCount = 0;
+            document.getElementById('eventCount').textContent = '0';
+            isDownloading = false;
+            
+            showToast('Demo已重置');
+        }
+
+        // 显示Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 场景 Tab 切换
+        document.querySelectorAll('.scene-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const scene = tab.dataset.scene;
+                
+                document.querySelectorAll('.scene-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                document.querySelectorAll('.scene-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('scene' + scene.charAt(0).toUpperCase() + scene.slice(1)).classList.add('active');
+
+                logEvent('scene_tab_click', { scene: scene });
+            });
+        });
+
+        // 英雄卡片鼠标离开延迟隐藏
+        document.getElementById('heroCard').addEventListener('mouseleave', () => {
+            scheduleHideHeroCard();
+        });
+
+        document.getElementById('heroCard').addEventListener('mouseenter', () => {
+            if (heroCardTimeout) {
+                clearTimeout(heroCardTimeout);
+                heroCardTimeout = null;
+            }
+        });
+
+        // 产品按钮鼠标离开也触发延迟隐藏
+        document.querySelectorAll('.product-btn').forEach(btn => {
+            btn.addEventListener('mouseleave', () => {
+                scheduleHideHeroCard();
+            });
+        });
+
+        // ESC 关闭
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeSettings();
+                if (document.getElementById('stripWrapper').classList.contains('active')) {
+                    closeStrip();
+                }
+                if (document.getElementById('popupContainer').classList.contains('active')) {
+                    closePopup();
+                }
+            }
+        });
+
+        // 点击外部关闭设置弹窗
+        document.addEventListener('click', (e) => {
+            const wrapper = document.querySelector('.strip-settings-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                closeSettings();
+            }
+        });
+
+        // 控制面板：样式切换时显示/隐藏产品选择
+        document.getElementById('styleSelect').addEventListener('change', (e) => {
+            const productGroup = document.getElementById('productSelectGroup');
+            if (e.target.value === 'corner') {
+                productGroup.style.display = 'block';
+                productGroup.querySelector('label').textContent = '选择推广产品（样式一）';
+            } else {
+                productGroup.style.display = 'none';
+            }
+        });
+
+        // 页面加载提示
+        document.addEventListener('DOMContentLoaded', () => {
+            showToast('选择样式后点击"展示弹窗"');
+        });
+    </script>
+</body>
+</html>

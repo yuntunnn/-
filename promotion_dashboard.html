@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>推广模块放量数据看板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07090d;--surface:#0e1117;--surface2:#151820;--border:#1a1f2c;
+  --c1:#3b82f6;--c2:#8b5cf6;--c3:#10b981;--c4:#f59e0b;--c5:#ef4444;
+  --text:#e2e8f0;--muted:#4b5563;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans SC',sans-serif;font-size:14px;line-height:1.6}
+.mono{font-family:'IBM Plex Mono',monospace}
+.container{max-width:1400px;margin:0 auto;padding:24px 20px}
+/* Header */
+.header{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-bottom:24px}
+.header h1{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px}
+.header .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.header-kpi{display:flex;gap:32px;flex-wrap:wrap}
+.header-kpi-item{display:flex;flex-direction:column;gap:2px}
+.header-kpi-item .label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.header-kpi-item .val{font-size:18px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+/* KPI cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-card.c1::before{background:var(--c1)}
+.kpi-card.c2::before{background:var(--c2)}
+.kpi-card.c3::before{background:var(--c3)}
+.kpi-card.c4::before{background:var(--c4)}
+.kpi-card.c5::before{background:var(--c5)}
+.kpi-card .kpi-label{font-size:12px;color:var(--muted);margin-bottom:8px}
+.kpi-card .kpi-val{font-size:28px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1}
+.kpi-card .kpi-sub{font-size:11px;color:var(--muted);margin-top:6px}
+/* Chart sections */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:24px}
+.section-title{font-size:15px;font-weight:600;margin-bottom:20px;color:var(--text)}
+.chart-wrap{width:100%;overflow-x:auto}
+svg.chart{display:block;width:100%;height:auto}
+/* Table */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--muted);font-weight:500;padding:10px 12px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap}
+th:first-child{text-align:left}
+td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;font-size:12px}
+td:first-child{text-align:left;font-family:'Noto Sans SC',sans-serif;font-size:13px}
+tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-family:'Noto Sans SC',sans-serif;font-weight:500}
+.ctr-blue{color:#93c5fd}.ctr-green{color:#6ee7b7}.ctr-amber{color:#fcd34d}
+.inst-green{color:#6ee7b7}.inst-amber{color:#fcd34d}.inst-red{color:#fca5a5}
+.brk-red{color:#fca5a5}.brk-amber{color:#fcd34d}
+/* Insights */
+.insights-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+@media(max-width:900px){.insights-grid{grid-template-columns:1fr 1fr}}
+.insight-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;border-left:3px solid}
+.insight-tag{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.insight-metric{font-size:32px;font-weight:700;font-family:'IBM Plex Mono',monospace;line-height:1;margin-bottom:8px}
+.insight-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.insight-desc{font-size:12px;color:var(--muted);line-height:1.7}
+/* Suggestions */
+.sugg-list{display:flex;flex-direction:column;gap:12px}
+.sugg-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px 20px;display:flex;gap:16px;align-items:flex-start}
+.sugg-priority{font-size:11px;font-weight:700;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:4px;white-space:nowrap;margin-top:2px}
+.p0{background:#3f0f0f;color:#fca5a5}.p1{background:#3d2e00;color:#fcd34d}.p2{background:#052e16;color:#6ee7b7}
+.sugg-body .sugg-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.sugg-body .sugg-desc{font-size:12px;color:var(--muted);line-height:1.7}
+/* Legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--muted)}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.legend-line{width:20px;height:2px}
+</style>
+</head>
+<body>
+<div class="container">
+<!-- Header -->
+<div class="header">
+  <h1>推广模块放量数据看板</h1>
+  <div class="sub">数据周期：2026-02-09 ~ 2026-02-24 &nbsp;|&nbsp; 生成时间：2026-02-25 16:06</div>
+  <div class="header-kpi">
+    <div class="header-kpi-item"><span class="label">总启动</span><span class="val mono">281,443</span></div>
+    <div class="header-kpi-item"><span class="label">总展示</span><span class="val mono">232,786</span></div>
+    <div class="header-kpi-item"><span class="label">总点击</span><span class="val mono">1,989</span></div>
+    <div class="header-kpi-item"><span class="label">总安装</span><span class="val mono">1,785</span></div>
+    <div class="header-kpi-item"><span class="label">整体CTR</span><span class="val mono">0.9%</span></div>
+    <div class="header-kpi-item"><span class="label">点击→安装</span><span class="val mono">89.7%</span></div>
+  </div>
+</div>
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card c1">
+    <div class="kpi-label">总启动 start</div>
+    <div class="kpi-val">281,443</div>
+    <div class="kpi-sub">全周期累计用户</div>
+  </div>
+  <div class="kpi-card c2">
+    <div class="kpi-label">总展示 pop_show</div>
+    <div class="kpi-val">232,786</div>
+    <div class="kpi-sub">展示率 82.7%</div>
+  </div>
+  <div class="kpi-card c3">
+    <div class="kpi-label">总点击 pop_click</div>
+    <div class="kpi-val">1,989</div>
+    <div class="kpi-sub">CTR 0.9%</div>
+  </div>
+  <div class="kpi-card c4">
+    <div class="kpi-label">总安装 down_end_suc</div>
+    <div class="kpi-val">1,785</div>
+    <div class="kpi-sub">点击→安装 89.7%</div>
+  </div>
+  <div class="kpi-card c5">
+    <div class="kpi-label">总 break</div>
+    <div class="kpi-val">53,643</div>
+    <div class="kpi-sub">break率 19.1%</div>
+  </div>
+</div>
+<!-- Daily Traffic Trend -->
+<div class="section">
+  <div class="section-title">每日流量趋势</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>start（启动）</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div>pop_show（展示）</div>
+    <div class="legend-item"><div class="legend-line" style="background:#10b981"></div>pop_click ×10（点击放大）</div>
+    <div class="legend-item"><span style="font-size:11px;opacity:.6">虚线/空心点 = 灰测期</span></div>
+  </div>
+  <div class="chart-wrap"><svg id="chart-traffic" class="chart" viewBox="0 0 1200 320"></svg></div>
+</div>
+<!-- CTR Trend -->
+<div class="section">
+  <div class="section-title">每日弹窗 CTR 趋势</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>CTR%</div>
+    <div class="legend-item"><div class="legend-line" style="background:#ef4444;border-top:2px dashed #ef4444"></div>1% 参考线</div>
+  </div>
+  <div class="chart-wrap"><svg id="chart-ctr" class="chart" viewBox="0 0 1200 280"></svg></div>
+</div>
+<!-- Install Rate -->
+<div class="section">
+  <div class="section-title">每日点击→安装转化率</div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>≥80% 优秀</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>60–79% 一般</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>&lt;60% 需关注</div>
+  </div>
+  <div class="chart-wrap"><svg id="chart-install" class="chart" viewBox="0 0 1200 280"></svg></div>
+</div>
+<!-- Funnel -->
+<div class="section">
+  <div class="section-title">全周期汇总漏斗（排除灰测期）</div>
+  <div class="chart-wrap"><svg id="chart-funnel" class="chart" viewBox="0 0 1200 340"></svg></div>
+</div>
+<!-- Close Behavior -->
+<div class="section">
+  <div class="section-title">弹窗关闭行为分布（排除灰测期）</div>
+  <div class="chart-wrap"><svg id="chart-close" class="chart" viewBox="0 0 1200 220"></svg></div>
+</div>
+<!-- Data Table -->
+<div class="section">
+  <div class="section-title">每日明细数据</div>
+  <div class="tbl-wrap">
+    <table id="detail-table">
+      <thead><tr>
+        <th>日期</th><th>start</th><th>pop_show</th><th>展示率</th>
+        <th>pop_click</th><th>CTR</th><th>安装成功</th><th>点击→安装</th>
+        <th>break</th><th>break率</th><th>阶段</th>
+      </tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+<!-- Insights -->
+<div class="section-title" style="margin-bottom:16px">关键洞察</div>
+<div class="insights-grid" id="insights-grid"></div>
+<!-- Suggestions -->
+<div class="section">
+  <div class="section-title">优化建议</div>
+  <div class="sugg-list" id="sugg-list"></div>
+</div>
+</div><!-- /container -->
+<script>
+const ROWS = [{"date": "2026-02-09", "phase": "灰测期", "start": 4, "trigger": 4, "show": 4, "click": 4, "close": 3, "notips": 3, "timeout": 0, "down_start": 2, "down_suc": 0, "down_fail": 0, "down_end_suc": 0, "down_end_fail": 0, "break_count": 3, "show_rate": 100.0, "ctr": 100.0, "install_rate": 0.0, "brk_rate": 75.0}, {"date": "2026-02-10", "phase": "灰测期", "start": 6, "trigger": 6, "show": 6, "click": 3, "close": 6, "notips": 0, "timeout": 0, "down_start": 3, "down_suc": 0, "down_fail": 0, "down_end_suc": 0, "down_end_fail": 0, "break_count": 3, "show_rate": 100.0, "ctr": 50.0, "install_rate": 0.0, "brk_rate": 50.0}, {"date": "2026-02-11", "phase": "灰度扩量", "start": 1541, "trigger": 1305, "show": 1240, "click": 13, "close": 1154, "notips": 18, "timeout": 38, "down_start": 13, "down_suc": 9, "down_fail": 0, "down_end_suc": 8, "down_end_fail": 0, "break_count": 342, "show_rate": 80.47, "ctr": 1.05, "install_rate": 61.54, "brk_rate": 22.19}, {"date": "2026-02-12", "phase": "稳定期", "start": 21428, "trigger": 18542, "show": 17948, "click": 139, "close": 16644, "notips": 359, "timeout": 540, "down_start": 139, "down_suc": 124, "down_fail": 12, "down_end_suc": 123, "down_end_fail": 14, "break_count": 4030, "show_rate": 83.76, "ctr": 0.77, "install_rate": 88.49, "brk_rate": 18.81}, {"date": "2026-02-13", "phase": "正式放量", "start": 61821, "trigger": 53204, "show": 51483, "click": 363, "close": 47984, "notips": 1090, "timeout": 1390, "down_start": 362, "down_suc": 321, "down_fail": 32, "down_end_suc": 319, "down_end_fail": 35, "break_count": 11400, "show_rate": 83.28, "ctr": 0.71, "install_rate": 87.88, "brk_rate": 18.44}, {"date": "2026-02-14", "phase": "灰度扩量", "start": 3439, "trigger": 2615, "show": 2522, "click": 31, "close": 2313, "notips": 65, "timeout": 101, "down_start": 31, "down_suc": 29, "down_fail": 0, "down_end_suc": 29, "down_end_fail": 0, "break_count": 923, "show_rate": 73.34, "ctr": 1.23, "install_rate": 93.55, "brk_rate": 26.84}, {"date": "2026-02-15", "phase": "灰度扩量", "start": 2421, "trigger": 1867, "show": 1804, "click": 26, "close": 1625, "notips": 52, "timeout": 62, "down_start": 26, "down_suc": 24, "down_fail": 0, "down_end_suc": 24, "down_end_fail": 0, "break_count": 611, "show_rate": 74.51, "ctr": 1.44, "install_rate": 92.31, "brk_rate": 25.24}, {"date": "2026-02-16", "phase": "灰度扩量", "start": 2044, "trigger": 1631, "show": 1573, "click": 12, "close": 1447, "notips": 44, "timeout": 37, "down_start": 12, "down_suc": 12, "down_fail": 0, "down_end_suc": 12, "down_end_fail": 0, "break_count": 440, "show_rate": 76.96, "ctr": 0.76, "install_rate": 100.0, "brk_rate": 21.53}, {"date": "2026-02-17", "phase": "灰度扩量", "start": 1867, "trigger": 1495, "show": 1451, "click": 12, "close": 1320, "notips": 57, "timeout": 38, "down_start": 12, "down_suc": 11, "down_fail": 0, "down_end_suc": 11, "down_end_fail": 0, "break_count": 392, "show_rate": 77.72, "ctr": 0.83, "install_rate": 91.67, "brk_rate": 21.0}, {"date": "2026-02-18", "phase": "灰度扩量", "start": 1993, "trigger": 1641, "show": 1599, "click": 19, "close": 1474, "notips": 44, "timeout": 43, "down_start": 19, "down_suc": 15, "down_fail": 0, "down_end_suc": 15, "down_end_fail": 0, "break_count": 406, "show_rate": 80.23, "ctr": 1.19, "install_rate": 78.95, "brk_rate": 20.37}, {"date": "2026-02-19", "phase": "灰度扩量", "start": 1991, "trigger": 1651, "show": 1610, "click": 21, "close": 1495, "notips": 29, "timeout": 47, "down_start": 21, "down_suc": 18, "down_fail": 0, "down_end_suc": 18, "down_end_fail": 0, "break_count": 377, "show_rate": 80.86, "ctr": 1.3, "install_rate": 85.71, "brk_rate": 18.94}, {"date": "2026-02-20", "phase": "灰度扩量", "start": 2042, "trigger": 1701, "show": 1651, "click": 14, "close": 1532, "notips": 36, "timeout": 48, "down_start": 14, "down_suc": 12, "down_fail": 0, "down_end_suc": 12, "down_end_fail": 0, "break_count": 403, "show_rate": 80.85, "ctr": 0.85, "install_rate": 85.71, "brk_rate": 19.74}, {"date": "2026-02-21", "phase": "正式放量", "start": 33523, "trigger": 29006, "show": 28257, "click": 291, "close": 26260, "notips": 622, "timeout": 713, "down_start": 291, "down_suc": 265, "down_fail": 21, "down_end_suc": 263, "down_end_fail": 23, "break_count": 5959, "show_rate": 84.29, "ctr": 1.03, "install_rate": 90.38, "brk_rate": 17.78}, {"date": "2026-02-22", "phase": "正式放量", "start": 39767, "trigger": 34268, "show": 33391, "click": 276, "close": 31069, "notips": 710, "timeout": 905, "down_start": 275, "down_suc": 250, "down_fail": 20, "down_end_suc": 249, "down_end_fail": 21, "break_count": 7364, "show_rate": 83.97, "ctr": 0.83, "install_rate": 90.22, "brk_rate": 18.52}, {"date": "2026-02-23", "phase": "正式放量", "start": 43841, "trigger": 37052, "show": 35999, "click": 318, "close": 33481, "notips": 846, "timeout": 932, "down_start": 314, "down_suc": 292, "down_fail": 16, "down_end_suc": 293, "down_end_fail": 17, "break_count": 8534, "show_rate": 82.11, "ctr": 0.88, "install_rate": 92.14, "brk_rate": 19.47}, {"date": "2026-02-24", "phase": "正式放量", "start": 63715, "trigger": 53943, "show": 52248, "click": 447, "close": 48635, "notips": 1162, "timeout": 1358, "down_start": 449, "down_suc": 412, "down_fail": 28, "down_end_suc": 409, "down_end_fail": 32, "break_count": 12456, "show_rate": 82.0, "ctr": 0.86, "install_rate": 91.5, "brk_rate": 19.55}];
+const INSIGHTS = [{"tag": "核心瓶颈", "color": "#ef4444", "metric": "0.98%", "title": "弹窗 CTR 持续低于 2%", "desc": "排除灰测期后，平均 CTR 仅 0.98%。累计展示 232,776 人，仅 1,982 人点击。弹窗吸引力是当前最大瓶颈。"}, {"tag": "亮点", "color": "#10b981", "metric": "87.9%", "title": "安装成功率表现优秀", "desc": "点击后安装成功率平均 87.9%，下载链路健康，无需重点优化。"}, {"tag": "关注", "color": "#f59e0b", "metric": "20.6%", "title": "break 中断率偏高", "desc": "平均 break 率 20.6%，累计 53,637 人中断退出。建议细化埋点区分弹窗前/后中断。"}, {"tag": "关注", "color": "#f59e0b", "metric": "5,134", "title": "\"不再提示\"用户持续累积", "desc": "已有 5,134 人勾选\"不再提示\"，这部分用户永久流失，随推广持续可触达用户池将逐渐缩小。"}, {"tag": "趋势", "color": "#3b82f6", "metric": "63,715", "title": "连续放量中", "desc": "最近 4 天 start 量持续增长，最新一天达 63,715 人。"}];
+const SUGGESTIONS = [{"priority": "P0", "title": "突破弹窗 CTR", "desc": "当前平均 CTR 0.98%，累计 230,794 人看到弹窗但未点击。建议：A/B 测试不同文案（利益点前置）、优化视觉 CTA 按钮、调整触发时机（如用户空闲时弹出）。"}, {"priority": "P1", "title": "治理 break 中断", "desc": "平均 break 率 20.6%，累计 53,637 人。建议细化埋点区分「弹窗前中断」和「弹窗后中断」，针对性优化触发场景和页面加载性能。"}, {"priority": "P1", "title": "管理\"不再提示\"用户", "desc": "累计 5,134 人勾选不再提示。建议：加入免推名单避免无效曝光，分析这部分用户画像，评估是否需要调整弹窗频率策略。"}, {"priority": "P2", "title": "排查下载/安装失败", "desc": "下载+安装失败率 13.7%（271 次失败）。建议排查具体失败原因（网络超时、包损坏、存储空间不足等）。"}, {"priority": "P2", "title": "优化触发→展示转化", "desc": "start→pop_show 整体转化约 82.7%，约 48,657 人未看到弹窗。建议检查触发条件是否过严、频控策略是否合理。"}];
+
+const PHASE_COLORS = {
+  '灰测期':  {badge:'#6b7280', bg:'#1f2937'},
+  '灰度扩量':{badge:'#3b82f6', bg:'#1e3a5f'},
+  '稳定期':  {badge:'#f59e0b', bg:'#3d2e00'},
+  '正式放量':{badge:'#10b981', bg:'#052e16'},
+};
+
+// ── helpers ──────────────────────────────────────────────
+function fmt(n){ return n==null||n===''?'-':Number(n).toLocaleString(); }
+function pct(a,b){ return b?((a/b)*100).toFixed(1)+'%':'-'; }
+function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+
+// ── Table ─────────────────────────────────────────────────
+(function buildTable(){
+  const tbody = document.getElementById('table-body');
+  ROWS.forEach(r=>{
+    const pc = PHASE_COLORS[r.phase]||{badge:'#6b7280',bg:'#1f2937'};
+    const ctrVal = r.ctr;
+    const ctrCls = ctrVal>2?'ctr-blue':ctrVal>=1?'ctr-green':'ctr-amber';
+    const instVal = r.install_rate;
+    const instCls = instVal>=80?'inst-green':instVal>=60?'inst-amber':'inst-red';
+    const brkVal = r.brk_rate;
+    const brkCls = brkVal>20?'brk-red':brkVal>15?'brk-amber':'';
+    const isGray = r.phase==='灰测期';
+    tbody.innerHTML += `<tr style="${isGray?'opacity:.55':''}">
+      <td>${r.date}</td>
+      <td>${fmt(r.start)}</td>
+      <td>${fmt(r.show)}</td>
+      <td>${r.show_rate}%</td>
+      <td>${fmt(r.click)}</td>
+      <td class="${ctrCls}">${r.ctr}%${isGray?' <span style="font-size:10px;color:#6b7280">[灰测]</span>':''}</td>
+      <td>${fmt(r.down_end_suc)}</td>
+      <td class="${instCls}">${r.click>0?r.install_rate+'%':'-'}</td>
+      <td>${fmt(r.break_count)}</td>
+      <td class="${brkCls}">${r.brk_rate}%</td>
+      <td><span class="badge" style="background:${pc.bg};color:${pc.badge}">${r.phase}</span></td>
+    </tr>`;
+  });
+})();
+
+// ── Insights ──────────────────────────────────────────────
+(function buildInsights(){
+  const grid = document.getElementById('insights-grid');
+  if(!INSIGHTS.length){ grid.innerHTML='<p style="color:var(--muted)">暂无洞察数据</p>'; return; }
+  INSIGHTS.forEach(ins=>{
+    grid.innerHTML += `<div class="insight-card" style="border-left-color:${ins.color}">
+      <div class="insight-tag" style="color:${ins.color}">${ins.tag}</div>
+      <div class="insight-metric" style="color:${ins.color}">${ins.metric}</div>
+      <div class="insight-title">${ins.title}</div>
+      <div class="insight-desc">${ins.desc}</div>
+    </div>`;
+  });
+})();
+
+// ── Suggestions ───────────────────────────────────────────
+(function buildSugg(){
+  const list = document.getElementById('sugg-list');
+  SUGGESTIONS.forEach(s=>{
+    const cls = s.priority==='P0'?'p0':s.priority==='P1'?'p1':'p2';
+    list.innerHTML += `<div class="sugg-item">
+      <span class="sugg-priority ${cls}">${s.priority}</span>
+      <div class="sugg-body">
+        <div class="sugg-title">${s.title}</div>
+        <div class="sugg-desc">${s.desc}</div>
+      </div>
+    </div>`;
+  });
+})();
+</script>
+<script>
+// ── SVG utils ─────────────────────────────────────────────
+function svgEl(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs||{}).forEach(([k,v])=>el.setAttribute(k,v));
+  return el;
+}
+function svgText(svg, x, y, txt, attrs){
+  const el = svgEl('text', Object.assign({x,y,'text-anchor':'middle','dominant-baseline':'middle',fill:'#4b5563','font-size':'11','font-family':'IBM Plex Mono,monospace'}, attrs));
+  el.textContent = txt;
+  svg.appendChild(el);
+  return el;
+}
+function svgLine(svg, x1,y1,x2,y2, attrs){
+  svg.appendChild(svgEl('line', Object.assign({x1,y1,x2,y2,stroke:'#1a1f2c'}, attrs)));
+}
+
+// ── Chart 1: Daily Traffic (bar+line) ────────────────────
+(function drawTraffic(){
+  const svg = document.getElementById('chart-traffic');
+  const W=1200, H=320, PAD={l:60,r:20,t:20,b:50};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+  const n=ROWS.length; if(!n) return;
+
+  const maxVal = Math.max(...ROWS.map(r=>Math.max(r.start,r.show)));
+  const clickScale = 10;
+  const maxClick = Math.max(...ROWS.map(r=>r.click))*clickScale;
+  const yMax = Math.max(maxVal, maxClick)*1.1||1;
+
+  const slotW = cW/n;
+  const barW = Math.max(4, slotW*0.35);
+  const y = v => PAD.t + cH - (v/yMax)*cH;
+  const xMid = i => PAD.l + (i+0.5)*slotW;
+
+  // Phase background bands
+  let phaseStart=0, curPhase=ROWS[0].phase;
+  const drawBand=(from,to,phase)=>{
+    const pc=PHASE_COLORS[phase]||{bg:'#1f2937'};
+    const rx=PAD.l+from*slotW, rw=(to-from)*slotW;
+    const rect=svgEl('rect',{x:rx,y:PAD.t,width:rw,height:cH,fill:pc.bg,opacity:'0.35'});
+    svg.appendChild(rect);
+  };
+  ROWS.forEach((r,i)=>{
+    if(r.phase!==curPhase||i===n-1){
+      drawBand(phaseStart, i===n-1?n:i, curPhase);
+      phaseStart=i; curPhase=r.phase;
+    }
+  });
+
+  // Y grid lines
+  for(let t=0;t<=4;t++){
+    const yv=PAD.t+cH*(1-t/4);
+    svgLine(svg,PAD.l,yv,W-PAD.r,yv,{stroke:'#1a1f2c','stroke-dasharray':'3,3'});
+    const label=((yMax*t/4)/1000).toFixed(0)+'K';
+    svgText(svg,PAD.l-8,yv,label,{'text-anchor':'end','dominant-baseline':'middle',fill:'#4b5563','font-size':'10'});
+  }
+
+  // Bars: start (blue) + show (purple)
+  ROWS.forEach((r,i)=>{
+    const cx=xMid(i);
+    const isGray=r.phase==='灰测期';
+    // start bar
+    const sh=Math.max(1,(r.start/yMax)*cH);
+    const sb=svgEl('rect',{x:cx-barW-1,y:y(r.start),width:barW,height:sh,fill:'#3b82f6',opacity:isGray?'0.4':'0.85',rx:'2'});
+    svg.appendChild(sb);
+    // show bar
+    const shh=Math.max(1,(r.show/yMax)*cH);
+    const shb=svgEl('rect',{x:cx+1,y:y(r.show),width:barW,height:shh,fill:'#8b5cf6',opacity:isGray?'0.4':'0.85',rx:'2'});
+    svg.appendChild(shb);
+  });
+
+  // Click line (scaled)
+  const pts=ROWS.map((r,i)=>`${xMid(i)},${y(r.click*clickScale)}`).join(' ');
+  const polyline=svgEl('polyline',{points:pts,fill:'none',stroke:'#10b981','stroke-width':'2','stroke-linejoin':'round'});
+  svg.appendChild(polyline);
+  ROWS.forEach((r,i)=>{
+    const isGray=r.phase==='灰测期';
+    const cx=xMid(i), cy=y(r.click*clickScale);
+    const dot=svgEl('circle',{cx,cy,r:'3',fill:isGray?'none':'#10b981',stroke:'#10b981','stroke-width':'1.5'});
+    svg.appendChild(dot);
+  });
+
+  // X axis labels
+  ROWS.forEach((r,i)=>{
+    const cx=xMid(i);
+    const lbl=r.date.slice(5); // MM-DD
+    svgText(svg,cx,H-PAD.b+16,lbl,{'font-size':'10',fill:'#4b5563'});
+  });
+})();
+
+// ── Chart 2: CTR trend (area line) ───────────────────────
+(function drawCTR(){
+  const svg = document.getElementById('chart-ctr');
+  const W=1200,H=280,PAD={l:60,r:20,t:20,b:50};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+  const n=ROWS.length; if(!n) return;
+
+  const maxCTR=Math.max(...ROWS.map(r=>r.ctr),3)*1.2||5;
+  const y=v=>PAD.t+cH-(v/maxCTR)*cH;
+  const xMid=i=>PAD.l+(i+0.5)*(cW/n);
+
+  // Y grid
+  for(let t=0;t<=4;t++){
+    const yv=PAD.t+cH*(1-t/4);
+    svgLine(svg,PAD.l,yv,W-PAD.r,yv,{stroke:'#1a1f2c','stroke-dasharray':'3,3'});
+    svgText(svg,PAD.l-8,yv,(maxCTR*t/4).toFixed(1)+'%',{'text-anchor':'end','dominant-baseline':'middle',fill:'#4b5563','font-size':'10'});
+  }
+
+  // 1% reference line
+  const ref1y=y(1);
+  svgLine(svg,PAD.l,ref1y,W-PAD.r,ref1y,{stroke:'#ef4444','stroke-dasharray':'6,4','stroke-width':'1.5'});
+  svgText(svg,W-PAD.r+2,ref1y,'1%',{'text-anchor':'start',fill:'#ef4444','font-size':'10','dominant-baseline':'middle'});
+
+  // Area fill
+  const pts=ROWS.map((r,i)=>`${xMid(i)},${y(r.ctr)}`).join(' ');
+  const areaPath=`M${xMid(0)},${PAD.t+cH} L${pts.split(' ').join(' L')} L${xMid(n-1)},${PAD.t+cH} Z`;
+  const grad=svgEl('defs',{});
+  grad.innerHTML=`<linearGradient id="ctrGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/><stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/></linearGradient>`;
+  svg.appendChild(grad);
+  svg.appendChild(svgEl('path',{d:areaPath,fill:'url(#ctrGrad)'}));
+
+  // Line
+  const isGrayArr=ROWS.map(r=>r.phase==='灰测期');
+  for(let i=0;i<n-1;i++){
+    const x1=xMid(i),y1=y(ROWS[i].ctr),x2=xMid(i+1),y2=y(ROWS[i+1].ctr);
+    svg.appendChild(svgEl('line',{x1,y1,x2,y2,stroke:'#3b82f6','stroke-width':'2',
+      'stroke-dasharray':isGrayArr[i]?'4,3':'none'}));
+  }
+
+  // Points + labels
+  ROWS.forEach((r,i)=>{
+    const cx=xMid(i),cy=y(r.ctr);
+    const isGray=r.phase==='灰测期';
+    svg.appendChild(svgEl('circle',{cx,cy,r:'4',fill:isGray?'none':'#3b82f6',stroke:'#3b82f6','stroke-width':'2'}));
+    svgText(svg,cx,cy-12,r.ctr+'%',{'font-size':'10',fill:isGray?'#4b5563':'#93c5fd','font-weight':'600'});
+  });
+
+  // X labels
+  ROWS.forEach((r,i)=>svgText(svg,xMid(i),H-PAD.b+16,r.date.slice(5),{'font-size':'10',fill:'#4b5563'}));
+})();
+
+// ── Chart 3: Install rate bars ────────────────────────────
+(function drawInstall(){
+  const svg=document.getElementById('chart-install');
+  const W=1200,H=280,PAD={l:60,r:20,t:20,b:50};
+  const cW=W-PAD.l-PAD.r,cH=H-PAD.t-PAD.b;
+  const data=ROWS.filter(r=>r.click>0);
+  const n=data.length; if(!n) return;
+  const slotW=cW/n, barW=Math.max(6,slotW*0.6);
+  const y=v=>PAD.t+cH-(v/100)*cH;
+  const xMid=i=>PAD.l+(i+0.5)*slotW;
+
+  // Y grid
+  [0,25,50,75,100].forEach(t=>{
+    const yv=y(t);
+    svgLine(svg,PAD.l,yv,W-PAD.r,yv,{stroke:'#1a1f2c','stroke-dasharray':'3,3'});
+    svgText(svg,PAD.l-8,yv,t+'%',{'text-anchor':'end','dominant-baseline':'middle',fill:'#4b5563','font-size':'10'});
+  });
+
+  data.forEach((r,i)=>{
+    const v=r.install_rate;
+    const color=v>=80?'#10b981':v>=60?'#f59e0b':'#ef4444';
+    const bh=Math.max(2,(v/100)*cH);
+    const cx=xMid(i);
+    svg.appendChild(svgEl('rect',{x:cx-barW/2,y:y(v),width:barW,height:bh,fill:color,opacity:'0.85',rx:'2'}));
+    svgText(svg,cx,y(v)-8,v+'%',{'font-size':'10',fill:color,'font-weight':'600'});
+    svgText(svg,cx,H-PAD.b+16,r.date.slice(5),{'font-size':'10',fill:'#4b5563'});
+  });
+})();
+</script>
+// ── Chart 4: Funnel (horizontal bars) ────────────────────
+(function drawFunnel(){
+  const svg=document.getElementById('chart-funnel');
+  const W=1200,H=340,PAD={l:120,r:160,t:20,b:20};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+
+  const steps=[
+    {label:'start',       val:281433},
+    {label:'trigger',     val:239921},
+    {label:'pop_show',    val:232776},
+    {label:'pop_click',   val:1982},
+    {label:'down_start',  val:1978},
+    {label:'down_suc',    val:1794},
+    {label:'down_end_suc',val:1785},
+  ];
+  const colors=['#3b82f6','#6366f1','#8b5cf6','#10b981','#f59e0b','#f97316','#ef4444'];
+  const maxVal=steps[0].val||1;
+  const rowH=cH/steps.length;
+
+  steps.forEach((s,i)=>{
+    const barW=Math.max(2,(s.val/maxVal)*cW);
+    const ry=PAD.t+i*rowH+rowH*0.15;
+    const bh=rowH*0.55;
+    svg.appendChild(svgEl('rect',{x:PAD.l,y:ry,width:barW,height:bh,fill:colors[i],rx:'3',opacity:'0.85'}));
+    // label left
+    svgText(svg,PAD.l-6,ry+bh/2,s.label,{'text-anchor':'end','dominant-baseline':'middle',fill:'#e2e8f0','font-size':'12','font-family':'IBM Plex Mono,monospace'});
+    // value right
+    svgText(svg,PAD.l+barW+8,ry+bh/2,s.val.toLocaleString(),{'text-anchor':'start','dominant-baseline':'middle',fill:'#e2e8f0','font-size':'12','font-family':'IBM Plex Mono,monospace'});
+    // conversion rate between steps
+    if(i>0){
+      const prev=steps[i-1].val;
+      const rate=prev?((s.val/prev)*100).toFixed(1)+'%':'-';
+      const isBottleneck=(i===3); // pop_click is biggest bottleneck
+      svgText(svg,W-PAD.r+60,ry-rowH*0.15,'↓ '+rate,{'text-anchor':'middle','dominant-baseline':'middle',fill:isBottleneck?'#ef4444':'#4b5563','font-size':'11','font-weight':isBottleneck?'700':'400','font-family':'IBM Plex Mono,monospace'});
+    }
+  });
+})();
+
+// ── Chart 5: Close behavior (horizontal bars) ────────────
+(function drawClose(){
+  const svg=document.getElementById('chart-close');
+  const W=1200,H=220,PAD={l:140,r:160,t:20,b:20};
+  const cW=W-PAD.l-PAD.r, cH=H-PAD.t-PAD.b;
+
+  const items=[
+    {label:'pop_close（主动关闭）',  val:216433,  color:'#8b5cf6'},
+    {label:'kk_pop_timeout（超时）', val:6252, color:'#f59e0b'},
+    {label:'pop_notips（不再提示）', val:5134,  color:'#ef4444'},
+    {label:'pop_click（点击）',      val:1982,  color:'#10b981'},
+  ];
+  const maxVal=Math.max(...items.map(it=>it.val))||1;
+  const rowH=cH/items.length;
+
+  items.forEach((it,i)=>{
+    const barW=Math.max(2,(it.val/maxVal)*cW);
+    const ry=PAD.t+i*rowH+rowH*0.15;
+    const bh=rowH*0.55;
+    svg.appendChild(svgEl('rect',{x:PAD.l,y:ry,width:barW,height:bh,fill:it.color,rx:'3',opacity:'0.85'}));
+    svgText(svg,PAD.l-6,ry+bh/2,it.label,{'text-anchor':'end','dominant-baseline':'middle',fill:'#e2e8f0','font-size':'12','font-family':'Noto Sans SC,sans-serif'});
+    svgText(svg,PAD.l+barW+8,ry+bh/2,it.val.toLocaleString(),{'text-anchor':'start','dominant-baseline':'middle',fill:'#e2e8f0','font-size':'12','font-family':'IBM Plex Mono,monospace'});
+  });
+})();
+</script>
+</body>
+</html>
