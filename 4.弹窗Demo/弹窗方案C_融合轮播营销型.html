@@ -52,43 +52,29 @@
             box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
         }
 
-        /* ===== 飘带标签 ===== */
+        /* ===== 飘带标签（骑在CTA按钮上） ===== */
+        .cta-wrapper {
+            position: relative;
+            margin: 14px 24px 0;
+        }
+
         .ribbon {
             position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
+            top: -11px;
+            left: 0px;
+            z-index: 2;
         }
 
         .ribbon-inner {
             background: linear-gradient(135deg, #FF6B35 0%, #FF8F5E 40%, #FF6B35 60%, #E55A2B 100%);
             color: #fff;
-            font-size: 15px;
-            font-weight: 800;
-            padding: 7px 28px;
-            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 8px 8px 8px 2px;
             white-space: nowrap;
-            letter-spacing: 3px;
-            box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            position: relative;
-        }
-
-        .ribbon-inner::before,
-        .ribbon-inner::after {
-            content: '✦';
-            font-size: 10px;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .ribbon-inner::before {
-            left: 10px;
-        }
-
-        .ribbon-inner::after {
-            right: 10px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 6px rgba(255, 107, 53, 0.35);
         }
 
         /* ===== 关闭按钮 ===== */
@@ -232,101 +218,105 @@
             position: relative;
             z-index: 2;
             text-align: center;
-            padding: 0 24px;
+            padding: 18px 20px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
         }
 
-        .slide-icon {
-            font-size: 44px;
-            margin-bottom: 8px;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
-        }
-
-        .slide-badge {
-            display: inline-block;
-            padding: 3px 14px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .slide-svip .slide-badge {
-            background: rgba(78, 203, 255, 0.2);
-            border: 1px solid rgba(78, 203, 255, 0.4);
-            color: #4ecbff;
-        }
-
-        .slide-ai .slide-badge {
-            background: rgba(179, 136, 255, 0.2);
-            border: 1px solid rgba(179, 136, 255, 0.4);
-            color: #b388ff;
-        }
-
-        .slide-scan .slide-badge {
-            background: rgba(0, 230, 118, 0.2);
-            border: 1px solid rgba(0, 230, 118, 0.4);
-            color: #69f0ae;
-        }
-
-        .slide-price {
-            font-size: 52px;
-            font-weight: 900;
-            line-height: 1;
+        /* 产品名 */
+        .slide-product {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
             margin-bottom: 2px;
         }
 
-        .slide-svip .slide-price {
-            background: linear-gradient(180deg, #80D8FF 0%, #4ecbff 50%, #2196F3 100%);
+        /* 限时+折扣大字 */
+        .slide-headline {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .slide-headline-prefix {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .slide-headline-num {
+            font-size: 52px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .slide-svip .slide-headline-num {
+            background: linear-gradient(180deg, #fff 0%, #80D8FF 40%, #4ecbff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 2px 6px rgba(33, 150, 243, 0.4));
+            filter: drop-shadow(0 3px 8px rgba(33, 150, 243, 0.5));
         }
 
-        .slide-ai .slide-price {
-            background: linear-gradient(180deg, #E1BEE7 0%, #CE93D8 50%, #AB47BC 100%);
+        .slide-ai .slide-headline-num {
+            background: linear-gradient(180deg, #fff 0%, #E1BEE7 40%, #CE93D8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 2px 6px rgba(171, 71, 188, 0.4));
+            filter: drop-shadow(0 3px 8px rgba(171, 71, 188, 0.5));
         }
 
-        .slide-scan .slide-price {
-            background: linear-gradient(180deg, #A5D6A7 0%, #66BB6A 50%, #43A047 100%);
+        .slide-scan .slide-headline-num {
+            background: linear-gradient(180deg, #fff 0%, #A5D6A7 40%, #66BB6A 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 2px 6px rgba(67, 160, 71, 0.4));
+            filter: drop-shadow(0 3px 8px rgba(67, 160, 71, 0.5));
         }
 
+        .slide-headline-unit {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 价格说明 */
         .slide-price-sub {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.6);
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
         }
 
+        /* 底部权益文字行 */
         .slide-features {
             display: flex;
             justify-content: center;
-            gap: 16px;
+            align-items: center;
+            gap: 6px;
         }
 
-        .slide-feat {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .slide-feat-label {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.65);
+            color: rgba(255, 255, 255, 0.55);
             font-weight: 500;
         }
 
         .slide-feat-dot {
-            width: 4px;
-            height: 4px;
+            width: 3px;
+            height: 3px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.35);
         }
 
         /* 轮播装饰粒子 */
@@ -471,8 +461,8 @@
         }
 
         .brand-title-text {
-            font-size: 16px;
-            font-weight: 700;
+            font-size: 20px;
+            font-weight: 800;
             color: #1a1a2e;
             line-height: 1.4;
         }
@@ -484,25 +474,26 @@
             background-clip: text;
         }
 
-        /* ===== 限时福利条 ===== */
+        /* ===== 限时福利条（底部小标签） ===== */
         .promo-bar {
-            margin: 14px 24px 0;
-            padding: 10px 16px;
-            background: linear-gradient(135deg, rgba(79, 110, 247, 0.08) 0%, rgba(255, 107, 53, 0.08) 100%);
-            border: 1px solid rgba(79, 110, 247, 0.15);
-            border-radius: 12px;
+            margin: 8px 24px 16px;
+            padding: 6px 12px;
+            background: rgba(79, 110, 247, 0.05);
+            border: 1px solid rgba(79, 110, 247, 0.1);
+            border-radius: 8px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
+            gap: 8px;
         }
 
         .promo-text {
-            font-size: 13px;
-            font-weight: 600;
-            color: #4F6EF7;
+            font-size: 11px;
+            font-weight: 500;
+            color: #8a8fa3;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 3px;
         }
 
         .countdown-inline {
@@ -512,29 +503,29 @@
         }
 
         .cd-num {
-            background: linear-gradient(135deg, #4F6EF7, #3D5CCE);
-            color: #fff;
-            font-size: 13px;
-            font-weight: 800;
-            padding: 2px 5px;
-            border-radius: 4px;
-            min-width: 24px;
+            background: rgba(79, 110, 247, 0.12);
+            color: #4F6EF7;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 1px 4px;
+            border-radius: 3px;
+            min-width: 20px;
             text-align: center;
             font-variant-numeric: tabular-nums;
         }
 
         .cd-colon {
-            font-size: 13px;
-            font-weight: 700;
-            color: #4F6EF7;
+            font-size: 11px;
+            font-weight: 600;
+            color: #8a8fa3;
             animation: blink 1s step-end infinite;
         }
 
-        /* ===== CTA按钮 ===== */
+        /* CTA按钮尺寸调整（在wrapper内） */
         .cta-btn {
             display: block;
-            width: calc(100% - 48px);
-            margin: 14px auto 0;
+            width: 100%;
+            margin: 0;
             padding: 14px 0;
             border: none;
             border-radius: 12px;
@@ -547,7 +538,7 @@
             transition: all 0.25s;
             box-shadow: 0 6px 20px rgba(79, 110, 247, 0.3);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
 
         .cta-btn::after {
@@ -557,6 +548,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
+            border-radius: 12px;
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
             animation: shimmer 2.5s ease-in-out infinite;
         }
@@ -570,33 +562,21 @@
             transform: scale(0.97);
         }
 
-        /* ===== 底部 ===== */
+        /* ===== 不再提醒（右上角） ===== */
         .dismiss-text {
-            text-align: center;
-            padding: 0;
-            margin-top: 10px;
+            position: absolute;
+            top: 14px;
+            right: 48px;
             font-size: 12px;
-            color: #b0b4c0;
+            color: rgba(255, 255, 255, 0.75);
             cursor: pointer;
+            z-index: 10;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
         }
 
         .dismiss-text:hover {
-            color: #8a8fa3;
-        }
-
-
-
-        .social-proof {
-            text-align: center;
-            margin-top: 6px;
-            padding-bottom: 16px;
-            font-size: 11px;
-            color: #b0b4c0;
-        }
-
-        .social-proof span {
-            color: #4F6EF7;
-            font-weight: 600;
+            color: #fff;
         }
 
         /* ===== 动画 ===== */
@@ -707,12 +687,9 @@
 
     <div class="overlay" id="overlay">
         <div class="popup">
-            <!-- 飘带标签 -->
-            <div class="ribbon">
-                <div class="ribbon-inner">限时福利</div>
-            </div>
-
             <div class="popup-body">
+                <!-- 不再提醒（右上角） -->
+                <div class="dismiss-text" id="dismissText">不再提醒</div>
                 <!-- 关闭按钮 -->
                 <button class="close-btn" id="closeBtn">✕</button>
 
@@ -727,17 +704,19 @@
                             <div class="particle"></div>
                             <div class="particle"></div>
                             <div class="slide-content">
-                                <div class="slide-icon">💾</div>
-                                <div class="slide-badge">新人专享 · 30+网盘特权</div>
-                                <div class="slide-price">1.9折</div>
-                                <div class="slide-price-sub">连续包月仅 <strong
-                                        style="color:#fff;font-size:16px;">4.8</strong> 元/月</div>
+                                <div class="slide-product">夸克·网盘SVIP会员</div>
+                                <div class="slide-headline">
+                                    <span class="slide-headline-prefix">限时</span>
+                                    <span class="slide-headline-num">1.9</span>
+                                    <span class="slide-headline-unit">折</span>
+                                </div>
+                                <div class="slide-price-sub">连续包月仅 4.8 元/月</div>
                                 <div class="slide-features">
-                                    <span class="slide-feat">6T空间</span>
+                                    <span class="slide-feat-label">6T空间</span>
                                     <span class="slide-feat-dot"></span>
-                                    <span class="slide-feat">极速下载</span>
+                                    <span class="slide-feat-label">极速下载</span>
                                     <span class="slide-feat-dot"></span>
-                                    <span class="slide-feat">自动备份</span>
+                                    <span class="slide-feat-label">自动备份</span>
                                 </div>
                             </div>
                         </div>
@@ -750,17 +729,19 @@
                             <div class="particle"></div>
                             <div class="particle"></div>
                             <div class="slide-content">
-                                <div class="slide-icon">🧠</div>
-                                <div class="slide-badge">新人专享 · 20+AI特权</div>
-                                <div class="slide-price">1.9折</div>
-                                <div class="slide-price-sub">连续包月仅 <strong
-                                        style="color:#fff;font-size:16px;">4.8</strong> 元/月</div>
+                                <div class="slide-product">夸克·AI会员</div>
+                                <div class="slide-headline">
+                                    <span class="slide-headline-prefix">限时</span>
+                                    <span class="slide-headline-num">1.9</span>
+                                    <span class="slide-headline-unit">折</span>
+                                </div>
+                                <div class="slide-price-sub">连续包月仅 4.8 元/月</div>
                                 <div class="slide-features">
-                                    <span class="slide-feat">深度思考</span>
+                                    <span class="slide-feat-label">深度思考</span>
                                     <span class="slide-feat-dot"></span>
-                                    <span class="slide-feat">全局AI</span>
+                                    <span class="slide-feat-label">全局AI</span>
                                     <span class="slide-feat-dot"></span>
-                                    <span class="slide-feat">AI翻译</span>
+                                    <span class="slide-feat-label">AI翻译</span>
                                 </div>
                             </div>
                         </div>
@@ -773,17 +754,19 @@
                             <div class="particle"></div>
                             <div class="particle"></div>
                             <div class="slide-content">
-                                <div class="slide-icon">📄</div>
-                                <div class="slide-badge">限时特惠 · 20+扫描权益</div>
-                                <div class="slide-price">1元</div>
-                                <div class="slide-price-sub">7天试用，<strong
-                                        style="color:#fff;font-size:16px;">立减127</strong> 元</div>
+                                <div class="slide-product">夸克·扫描王会员</div>
+                                <div class="slide-headline">
+                                    <span class="slide-headline-prefix">7天仅</span>
+                                    <span class="slide-headline-num">1</span>
+                                    <span class="slide-headline-unit">元</span>
+                                </div>
+                                <div class="slide-price-sub">立减 127 元，享20+扫描权益</div>
                                 <div class="slide-features">
-                                    <span class="slide-feat">证件扫描</span>
+                                    <span class="slide-feat-label">证件扫描</span>
                                     <span class="slide-feat-dot"></span>
-                                    <span class="slide-feat">OCR识别</span>
+                                    <span class="slide-feat-label">OCR识别</span>
                                     <span class="slide-feat-dot"></span>
-                                    <span class="slide-feat">PDF转换</span>
+                                    <span class="slide-feat-label">PDF转换</span>
                                 </div>
                             </div>
                         </div>
@@ -811,7 +794,15 @@
                     </div>
                 </div>
 
-                <!-- 限时福利条 -->
+                <!-- CTA区域 -->
+                <div class="cta-wrapper">
+                    <div class="ribbon">
+                        <div class="ribbon-inner">限时福利</div>
+                    </div>
+                    <button class="cta-btn" id="ctaBtn">立即开通</button>
+                </div>
+
+                <!-- 限时福利条（底部） -->
                 <div class="promo-bar">
                     <div class="promo-text">
                         <span>🎁</span>
@@ -825,14 +816,6 @@
                         <span class="cd-num" id="cdS">59</span>
                     </div>
                 </div>
-
-                <!-- CTA按钮 -->
-                <button class="cta-btn" id="ctaBtn">4.8元 立即开通</button>
-
-                <!-- 底部 -->
-
-                <div class="dismiss-text" id="dismissText">不再提醒</div>
-                <div class="social-proof">已有 <span id="userCount">23,658</span> 人开通</div>
             </div>
         </div>
     </div>
@@ -845,9 +828,9 @@
 
             // ===== 每帧对应的动态内容 =====
             const slideData = [
-                { cta: '4.8元 立即开通', promoLabel: '新人限时优惠' },
-                { cta: '4.8元 立即开通', promoLabel: '新人限时优惠' },
-                { cta: '1元 立即试用', promoLabel: '新人限时试用' },
+                { promoLabel: '新人限时优惠' },
+                { promoLabel: '新人限时优惠' },
+                { promoLabel: '新人限时试用' },
             ];
 
             // ===== DOM =====
@@ -875,9 +858,8 @@
                     dot.classList.toggle('active', i === currentIndex);
                 });
 
-                // 更新CTA和促销标签
+                // 更新促销标签
                 const data = slideData[currentIndex];
-                ctaBtn.textContent = data.cta;
                 promoLabel.textContent = data.promoLabel;
 
                 // 重置进度条
@@ -961,13 +943,6 @@
                 if (cdS.textContent !== ss) { cdS.textContent = ss; cdS.classList.remove('flip'); void cdS.offsetWidth; cdS.classList.add('flip'); }
             }, 1000);
 
-            // ===== 社会认同数字增长 =====
-            const uc = document.getElementById('userCount');
-            let baseCount = 23658;
-            setInterval(() => {
-                baseCount += Math.floor(Math.random() * 3) + 1;
-                uc.textContent = baseCount.toLocaleString();
-            }, 5000);
 
             // ===== 关闭弹窗 =====
             function closePopup() {

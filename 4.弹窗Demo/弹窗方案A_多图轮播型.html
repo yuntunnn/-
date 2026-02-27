@@ -158,13 +158,13 @@
 
         /* ===== 固定品牌标题区域 ===== */
         .content {
-            padding: 8px 24px 24px;
+            padding: 8px 24px 20px;
             text-align: center;
         }
 
         .brand-title {
-            font-size: 17px;
-            font-weight: 700;
+            font-size: 20px;
+            font-weight: 800;
             color: #1a1a2e;
             line-height: 1.4;
             margin-bottom: 2px;
@@ -249,17 +249,21 @@
             right: 8px;
         }
 
-        /* ===== 底部提示 ===== */
+        /* ===== 以后再说（右上角） ===== */
         .skip-text {
-            text-align: center;
-            padding: 0 0 16px;
+            position: absolute;
+            top: 14px;
+            right: 48px;
             font-size: 12px;
-            color: #b0b4c0;
+            color: rgba(255, 255, 255, 0.75);
             cursor: pointer;
+            z-index: 10;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
         }
 
         .skip-text:hover {
-            color: #8a8fa3;
+            color: #fff;
         }
 
         /* ===== 轮播进度条 ===== */
@@ -306,6 +310,8 @@
 
     <div class="overlay" id="overlay">
         <div class="popup">
+            <!-- 以后再说（右上角） -->
+            <div class="skip-text" id="skipText">以后再说</div>
             <!-- 关闭按钮 -->
             <button class="close-btn" id="closeBtn">✕</button>
 
@@ -360,7 +366,6 @@
                 </div>
                 <button class="cta-btn" id="ctaBtn">立即体验</button>
             </div>
-            <div class="skip-text" id="skipText">以后再说</div>
         </div>
     </div>
 
